@@ -1,0 +1,28 @@
+[
+  {
+    "id": "banner-1779395583907-fr3y",
+    "titulo": "🚍 Cómo llegar sin vehículo propio",
+    "texto": "Si no cuentas con automóvil o prefieres no traerlo, puedes viajar en bus hasta Ubaté.\nDesde allí, coordinamos transporte en taxi hasta la propiedad.\n\nCONTAMOS CON ADICIONALES DE TRANSPORTE!!",
+    "imagen": "",
+    "pasos": [
+      "addons"
+    ],
+    "bgColor": "#FEF3C7",
+    "textColor": "#92400E",
+    "activo": true,
+    "createdAt": "2026-05-21T20:33:03.907Z"
+  },
+  {
+    "id": "banner-1779395650411-uzu3",
+    "titulo": "📍 Llegar a Carupa Glamping es muy fácil 🌿",
+    "texto": "Estamos entre Carmen de Carupa y Ubaté, a solo 2 horas de Bogotá y a 25 minutos de Ubaté.\n\n🚗 🏍️En carro o Moto:\nLlega hasta Sutatausa y luego busca Carupa Glamping en Google Maps o Waze.\n\n🚌 En transporte público:\nViaja hasta Ubaté y desde allí toma un taxi hasta el glamping.",
+    "imagen": "",
+    "pasos": [
+      "dates"
+    ],
+    "bgColor": "#FEF3C7",
+    "textColor": "#92400E",
+    "activo": true,
+    "createdAt": "2026-05-21T20:34:10.411Z"
+  }
+]

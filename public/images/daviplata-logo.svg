@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 80" width="200" height="80">
+  <rect width="200" height="80" rx="16" fill="#C8102E"/>
+  <text x="100" y="48" font-family="Arial, sans-serif" font-weight="800" font-size="30" fill="white" text-anchor="middle" letter-spacing="-0.5">Daviplata</text>
+  <text x="100" y="68" font-family="Arial, sans-serif" font-weight="400" font-size="12" fill="rgba(255,255,255,0.8)" text-anchor="middle">by Davivienda</text>
+</svg>

@@ -1,0 +1,9 @@
+node_modules
+dist
+1dist
+*.zip
+*.gz
+backup*
+base*
+attached_assets
+.env

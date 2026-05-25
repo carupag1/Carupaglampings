@@ -1,0 +1,103 @@
+[
+  {
+    "id": "decoracion",
+    "title": "Decoración especial",
+    "price": 80000,
+    "description": "Para cumpleaños, aniversario, pedida de noviazgo, noche de bodas o romántica.",
+    "details": [
+      "Flores y detalles decorativos",
+      "Iluminación especial",
+      "Personalización del espacio"
+    ],
+    "allowMultiple": false,
+    "maxQuantity": 1,
+    "media": [
+      {
+        "type": "video",
+        "url": "/images/addons/addon-1779398630582_h264.mp4"
+      }
+    ]
+  },
+  {
+    "id": "cena",
+    "title": "Cena (por persona)",
+    "price": 35000,
+    "description": "Cenas disponibles con reserva anticipada. Precio por persona.",
+    "details": [
+      "Menú especial de temporada",
+      "Servicio a la mesa",
+      "Solicitar con anticipación"
+    ],
+    "allowMultiple": true,
+    "maxQuantity": 6,
+    "media": [
+      {
+        "type": "video",
+        "url": "/images/addons/addon-1779398746915_h264.mp4"
+      }
+    ]
+  },
+  {
+    "id": "cuatrimoto",
+    "title": "Cuatrimoto (por persona)",
+    "price": 50000,
+    "description": "Recorrido en cuatrimoto por los senderos de la finca.",
+    "details": [
+      "Casco, guantes y gafas incluidos",
+      "Acompañamiento del mayordomo",
+      "Sujeto a condiciones climáticas"
+    ],
+    "allowMultiple": true,
+    "maxQuantity": 6,
+    "media": [
+      {
+        "type": "video",
+        "url": "/images/addons/addon-1779398488426_h264.mp4"
+      }
+    ]
+  },
+  {
+    "id": "poligono",
+    "title": "Polígono (por persona)",
+    "price": 30000,
+    "description": "Experiencia de tiro en polígono dentro de la finca.",
+    "details": [
+      "Equipo proporcionado",
+      "Instrucción básica incluida",
+      "Solo para mayores de edad"
+    ],
+    "allowMultiple": true,
+    "maxQuantity": 6
+  },
+  {
+    "id": "fogata",
+    "title": "Fogata con masmelos",
+    "price": 30000,
+    "description": "Romántica fogata con masmelos para la pareja.",
+    "details": [
+      "Leña incluida",
+      "Masmelos para dos",
+      "Momento perfecto bajo las estrellas"
+    ],
+    "allowMultiple": false,
+    "maxQuantity": 1,
+    "media": [
+      {
+        "type": "video",
+        "url": "/images/addons/addon-1779410457210_h264.mp4"
+      }
+    ]
+  },
+  {
+    "id": "taxi_ubate_carupa_glamping_1779336788892",
+    "title": "🚕 Taxi Ubaté – Carupa Glamping:",
+    "price": 40000,
+    "description": "",
+    "details": [
+      "Valor por trayecto para dos personas"
+    ],
+    "allowMultiple": true,
+    "maxQuantity": 10,
+    "media": []
+  }
+]

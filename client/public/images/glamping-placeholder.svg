@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
+  <rect width="800" height="600" fill="#1b3a2d"/>
+  <rect width="800" height="600" fill="url(#grad)" opacity="0.4"/>
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f2419;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2d5a42;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <!-- Stars -->
+  <circle cx="100" cy="80" r="1.5" fill="white" opacity="0.6"/>
+  <circle cx="200" cy="50" r="1" fill="white" opacity="0.5"/>
+  <circle cx="350" cy="90" r="1.5" fill="white" opacity="0.7"/>
+  <circle cx="500" cy="60" r="1" fill="white" opacity="0.4"/>
+  <circle cx="650" cy="75" r="2" fill="white" opacity="0.6"/>
+  <circle cx="720" cy="40" r="1" fill="white" opacity="0.5"/>
+  <circle cx="750" cy="110" r="1.5" fill="white" opacity="0.4"/>
+  <!-- Moon -->
+  <circle cx="680" cy="90" r="30" fill="#f5e6c8" opacity="0.9"/>
+  <circle cx="692" cy="80" r="26" fill="#1b3a2d"/>
+  <!-- Mountains -->
+  <polygon points="0,400 150,180 300,400" fill="#0f2419"/>
+  <polygon points="100,400 280,150 460,400" fill="#142e21"/>
+  <polygon points="300,400 500,120 700,400" fill="#0f2419"/>
+  <polygon points="500,400 680,170 800,400" fill="#142e21"/>
+  <polygon points="650,400 800,200 800,400" fill="#0f2419"/>
+  <!-- Ground -->
+  <rect x="0" y="400" width="800" height="200" fill="#0d2018"/>
+  <!-- Glamping tent / dome -->
+  <ellipse cx="400" cy="340" rx="100" ry="60" fill="#1e4535" stroke="#4a9068" stroke-width="2"/>
+  <path d="M 310 340 Q 400 240 490 340" fill="#2d5a42" stroke="#4a9068" stroke-width="2"/>
+  <!-- Dome lines -->
+  <line x1="400" y1="240" x2="400" y2="340" stroke="#4a9068" stroke-width="1" opacity="0.6"/>
+  <line x1="355" y1="255" x2="355" y2="340" stroke="#4a9068" stroke-width="1" opacity="0.4"/>
+  <line x1="445" y1="255" x2="445" y2="340" stroke="#4a9068" stroke-width="1" opacity="0.4"/>
+  <line x1="325" y1="290" x2="475" y2="290" stroke="#4a9068" stroke-width="1" opacity="0.4"/>
+  <line x1="315" y1="315" x2="485" y2="315" stroke="#4a9068" stroke-width="1" opacity="0.4"/>
+  <!-- Door -->
+  <rect x="380" y="310" width="40" height="30" rx="20" fill="#0d2018"/>
+  <!-- Warm window light -->
+  <ellipse cx="360" cy="305" rx="10" ry="7" fill="#f5c842" opacity="0.4"/>
+  <ellipse cx="440" cy="305" rx="10" ry="7" fill="#f5c842" opacity="0.4"/>
+  <!-- Trees -->
+  <rect x="185" y="350" width="8" height="50" fill="#0d2018"/>
+  <polygon points="189,270 160,355 218,355" fill="#142e21"/>
+  <polygon points="189,295 155,370 223,370" fill="#1a3828"/>
+  <rect x="585" y="350" width="8" height="50" fill="#0d2018"/>
+  <polygon points="589,270 560,355 618,355" fill="#142e21"/>
+  <polygon points="589,295 555,370 623,370" fill="#1a3828"/>
+  <!-- Campfire glow -->
+  <ellipse cx="400" cy="395" rx="20" ry="6" fill="#f5801a" opacity="0.3"/>
+  <polygon points="395,395 400,370 405,395" fill="#f5c842" opacity="0.8"/>
+  <polygon points="397,392 400,375 403,392" fill="#f5801a" opacity="0.9"/>
+  <!-- Text -->
+  <text x="400" y="480" text-anchor="middle" font-family="Georgia, serif" font-size="28" fill="white" opacity="0.9" letter-spacing="4">CARUPA GLAMPING</text>
+  <text x="400" y="510" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="white" opacity="0.5" letter-spacing="2">Lujo en la naturaleza</text>
+</svg>

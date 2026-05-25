@@ -1,0 +1,161 @@
+[
+  {
+    "id": 1,
+    "typeId": 1,
+    "name": "Domo Gold",
+    "isFamiliar": false,
+    "images": [
+      "/images/campings/camping-1779297286679.jpg",
+      "/images/campings/camping-1779297307117.jpeg",
+      "/images/campings/camping-1779298520597.jpg",
+      "/images/campings/camping-1779298599713.jpg",
+      "/images/campings/camping-1779298634871.jpg",
+      "/images/campings/camping-1779299164167.jpg",
+      "/images/campings/camping-1779299172764.jpg",
+      "/images/campings/camping-1779413185352.mp4"
+    ],
+    "image": "/images/campings/camping-1779297286679.jpg",
+    "description": "Domo exclusivo para dos personas con vista hacia las montañas. Jacuzzi privado climatizado, malla catamarán y todas las comodidades para una escapada perfecta.",
+    "features": [
+      "Jacuzzi privado",
+      "Malla catamarán",
+      "Baño privado",
+      "Nevera mini",
+      "Mini granja",
+      "Parqueadero",
+      "Wifi restaurante",
+      "Desayuno americano"
+    ],
+    "includes": [
+      "🍽️ Desayuno americano para dos",
+      "🛁 Jacuzzi climatizado y privado",
+      "🚿 Baño privado",
+      "❄️ Nevera mini en el domo",
+      "🐑🦙 Mini granja en su hábitat",
+      "🅿️ Parqueadero privado sin costo",
+      "🛜 Zona wifi en el restaurante",
+      "🕸️ Malla catamarán"
+    ],
+    "rating": 5
+  },
+  {
+    "id": 2,
+    "typeId": 2,
+    "name": "Domo Big Premium",
+    "isFamiliar": false,
+    "images": [
+      "/images/campings/camping-1779298393445.JPG",
+      "/images/campings/camping-1779298412345.jpg",
+      "/images/campings/camping-1779298441966.jpg",
+      "/images/campings/camping-1779298449630.JPG",
+      "/images/campings/camping-1779298457322.PNG",
+      "/images/campings/camping-1779298470080.PNG",
+      "/images/campings/camping-1779299235962.jpg",
+      "/images/campings/camping-1779299242717.jpg"
+    ],
+    "image": "/images/campings/camping-1779298393445.JPG",
+    "description": "Domo para dos personas con vista hacia el atardecer. Amplio, confortable y con jacuzzi privado climatizado.",
+    "features": [
+      "Jacuzzi privado",
+      "Malla catamarán",
+      "Baño privado",
+      "Nevera mini",
+      "Mini granja",
+      "Parqueadero",
+      "Wifi restaurante",
+      "Desayuno americano"
+    ],
+    "includes": [
+      "🛌 Alojamiento para dos personas",
+      "🍽️ Desayuno americano para dos",
+      "🛁 Jacuzzi climatizado y privado",
+      "🚿 Baño privado",
+      "❄️ Nevera mini en el domo",
+      "🐑🦙 Mini granja en su hábitat",
+      "🅿️ Parqueadero privado sin costo",
+      "🛜 Zona wifi en el restaurante",
+      "🕸️ Malla catamarán"
+    ],
+    "rating": 5
+  },
+  {
+    "id": 3,
+    "typeId": 3,
+    "name": "Domo Natura Premium",
+    "isFamiliar": false,
+    "images": [
+      "/images/campings/camping-1779298669495.jpg",
+      "/images/campings/camping-1779298674399.JPG",
+      "/images/campings/camping-1779298981461.jpg",
+      "/images/campings/camping-1779299006527.jpg",
+      "/images/campings/camping-1779299027077.jpg",
+      "/images/campings/camping-1779299067393.jpg",
+      "/images/campings/camping-1779299085109.jpg",
+      "/images/campings/camping-1779299114777.jpg"
+    ],
+    "image": "/images/campings/camping-1779298669495.jpg",
+    "description": "Domo para dos personas con vista hacia el bosque. Tranquilidad total, jacuzzi privado y televisión para Netflix en un entorno natural incomparable.",
+    "features": [
+      "Jacuzzi privado",
+      "Televisión Netflix",
+      "Baño privado",
+      "Nevera mini",
+      "Mini granja",
+      "Parqueadero",
+      "Wifi restaurante",
+      "Desayuno americano"
+    ],
+    "includes": [
+      "🛌 Alojamiento para dos personas",
+      "🍽️ Desayuno americano para dos",
+      "🛁 Jacuzzi climatizado y privado",
+      "🚿 Baño privado",
+      "❄️ Nevera mini en el domo",
+      "🐑🦙 Mini granja en su hábitat",
+      "🅿️ Parqueadero privado sin costo",
+      "🛜 Zona wifi en el restaurante",
+      "📺 Televisión para Netflix"
+    ],
+    "rating": 5
+  },
+  {
+    "id": 4,
+    "typeId": 2,
+    "name": "Domo Familiar",
+    "isFamiliar": true,
+    "images": [
+      "/images/campings/camping-1779297956912.jpg",
+      "/images/campings/camping-1779297960980.JPG",
+      "/images/campings/camping-1779298273435.jpg",
+      "/images/campings/camping-1779298285050.PNG",
+      "/images/campings/camping-1779298294060.JPG",
+      "/images/campings/camping-1779298301412.PNG",
+      "/images/campings/camping-1779299280729.jpg",
+      "/images/campings/camping-1779299286463.jpg"
+    ],
+    "image": "/images/campings/camping-1779297956912.jpg",
+    "description": "El mismo Domo Big Premium habilitado para familias o grupos de hasta 6 personas. Vista al atardecer, jacuzzi privado y todo el espacio que necesitan.",
+    "features": [
+      "Jacuzzi privado",
+      "Hasta 6 personas",
+      "Malla catamarán",
+      "Baño privado",
+      "Nevera mini",
+      "Mini granja",
+      "Parqueadero",
+      "Wifi restaurante"
+    ],
+    "includes": [
+      "🛌 Alojamiento para todos en el Domo",
+      "🍽️ Desayuno americano para todos",
+      "🛁 Jacuzzi climatizado y privado",
+      "🚿 Baño privado",
+      "❄️ Nevera mini en el domo",
+      "🐑🦙 Mini granja en su hábitat",
+      "🅿️ Parqueadero privado sin costo",
+      "🛜 Zona wifi en el restaurante",
+      "🕸️ Malla catamarán"
+    ],
+    "rating": 5
+  }
+]

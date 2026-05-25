@@ -128,9 +128,7 @@ export default function AdminDashboard() {
       .catch(() => setLocation("/admin/login"));
 
     return () => {
-      if (wasAuthenticated) {
-        navigator.sendBeacon("/api/logout.php");
-      }
+      // Cleanup: no-op — never auto-logout on unmount
     };
   }, []);
 
@@ -329,7 +327,7 @@ export default function AdminDashboard() {
   const [adminUserFormError, setAdminUserFormError] = useState<string | null>(null);
   const [adminUserSaving, setAdminUserSaving] = useState(false);
 
-  const fetchAdminUsers = () => fetch("/api/admin-users").then(r => r.json()).then(d => { if (Array.isArray(d)) setAdminUsers(d); }).catch(() => {});
+  const fetchAdminUsers = () => fetch("/api/admin-users", { credentials: "include" }).then(r => r.json()).then(d => { if (Array.isArray(d)) setAdminUsers(d); }).catch(() => {});
 
   const handleSaveAdminUser = async () => {
     setAdminUserFormError(null);
@@ -341,7 +339,7 @@ export default function AdminDashboard() {
       const method = editingAdminUser ? "PUT" : "POST";
       const body: any = { email: adminUserForm.email, rol: adminUserForm.rol };
       if (adminUserForm.password) body.password = adminUserForm.password;
-      const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+      const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify(body) });
       const data = await res.json();
       if (!res.ok) { setAdminUserFormError(data.error || "Error al guardar"); return; }
       toast({ title: editingAdminUser ? "Credencial actualizada" : "Credencial creada" });
@@ -353,7 +351,7 @@ export default function AdminDashboard() {
 
   const handleDeleteAdminUser = async (id: number) => {
     if (!confirm("¿Eliminar este usuario administrador?")) return;
-    const res = await fetch(`/api/admin-users/${id}`, { method: "DELETE" });
+    const res = await fetch(`/api/admin-users/${id}`, { method: "DELETE", credentials: "include" });
     const data = await res.json();
     if (res.ok) { toast({ title: "Usuario eliminado" }); fetchAdminUsers(); }
     else toast({ title: "Error", description: data.error, variant: "destructive" });
@@ -368,7 +366,7 @@ export default function AdminDashboard() {
   const [campingUploadProgress, setCampingUploadProgress] = useState(0);
   const [campingConverting, setCampingConverting] = useState(false);
 
-  const fetchAdminCampings = () => fetch("/api/campings").then(r => r.json()).then(d => { if (Array.isArray(d)) setAdminCampings(d); }).catch(() => {});
+  const fetchAdminCampings = () => fetch("/api/campings", { credentials: "include" }).then(r => r.json()).then(d => { if (Array.isArray(d)) setAdminCampings(d); }).catch(() => {});
 
   const openCampingModal = (c: AdminCamping) => {
     setEditingCamping(c);
@@ -381,7 +379,7 @@ export default function AdminDashboard() {
     setCampingSaving(true);
     try {
       const res = await fetch(`/api/campings/${editingCamping.id}`, {
-        method: "PUT", headers: { "Content-Type": "application/json" },
+        method: "PUT", headers: { "Content-Type": "application/json" }, credentials: "include",
         body: JSON.stringify({ name: campingForm.name, description: campingForm.description, features: campingForm.features, includes: campingForm.includes })
       });
       const data = await res.json();
@@ -435,12 +433,12 @@ export default function AdminDashboard() {
   };
 
   const handleDeleteCampingImage = async (campingId: number, imageUrl: string) => {
-    const res = await fetch(`/api/campings/${campingId}/image`, { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ imageUrl }) });
+    const res = await fetch(`/api/campings/${campingId}/image`, { method: "DELETE", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify({ imageUrl }) });
     if (res.ok) { toast({ title: "Foto eliminada" }); fetchAdminCampings(); if (editingCamping?.id === campingId) { setEditingCamping(prev => prev ? { ...prev, images: prev.images.filter(i => i !== imageUrl), image: prev.image === imageUrl ? prev.images.find(i => i !== imageUrl) || "" : prev.image } : null); } }
   };
 
   const handleSetCoverImage = async (campingId: number, imageUrl: string) => {
-    const res = await fetch(`/api/campings/${campingId}/cover`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ imageUrl }) });
+    const res = await fetch(`/api/campings/${campingId}/cover`, { method: "PATCH", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify({ imageUrl }) });
     if (res.ok) { toast({ title: "Foto de portada actualizada" }); fetchAdminCampings(); setEditingCamping(prev => prev ? { ...prev, image: imageUrl } : null); }
     else toast({ title: "Error al actualizar portada", variant: "destructive" });
   };
@@ -457,24 +455,24 @@ export default function AdminDashboard() {
   const [addonFormError, setAddonFormError] = useState<string | null>(null);
   const [addonSaving, setAddonSaving] = useState(false);
 
-  const fetchAdminAddons = () => fetch("/api/addons").then(r => r.json()).then(d => { if (Array.isArray(d)) setAdminAddons(d); }).catch(() => {});
+  const fetchAdminAddons = () => fetch("/api/addons", { credentials: "include" }).then(r => r.json()).then(d => { if (Array.isArray(d)) setAdminAddons(d); }).catch(() => {});
 
   const fetchBanners = async () => {
     try {
-      const r = await fetch("/api/banners");
+      const r = await fetch("/api/banners", { credentials: "include" });
       const data = await r.json();
       if (Array.isArray(data)) setBanners(data);
     } catch (e) { console.error("Error fetching banners:", e); }
   };
 
   const handleToggleBanner = async (id: string) => {
-    await fetch(`/api/banners/${id}/toggle`, { method: "PATCH" });
+    await fetch(`/api/banners/${id}/toggle`, { method: "PATCH", credentials: "include" });
     fetchBanners();
   };
 
   const handleDeleteBanner = async (id: string) => {
     if (!confirm("¿Eliminar este banner?")) return;
-    await fetch(`/api/banners/${id}`, { method: "DELETE" });
+    await fetch(`/api/banners/${id}`, { method: "DELETE", credentials: "include" });
     fetchBanners();
     toast({ title: "Banner eliminado" });
   };
@@ -512,7 +510,7 @@ export default function AdminDashboard() {
     if (!bannerForm.titulo && !bannerForm.texto) { setBannerFormError("El banner necesita al menos un título o mensaje"); return; }
     const method = editingBanner ? "PUT" : "POST";
     const url = editingBanner ? `/api/banners/${editingBanner.id}` : "/api/banners";
-    const r = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(bannerForm) });
+    const r = await fetch(url, { method, headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify(bannerForm) });
     const data = await r.json();
     if (data.success) {
       setIsBannerModalOpen(false);
@@ -538,7 +536,7 @@ export default function AdminDashboard() {
     try {
       const url = editingAddon ? `/api/addons/${editingAddon.id}` : "/api/addons";
       const method = editingAddon ? "PUT" : "POST";
-      const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title: addonForm.title, price: addonForm.price, description: addonForm.description, details: addonForm.details, allowMultiple: addonForm.allowMultiple, maxQuantity: addonForm.allowMultiple ? addonForm.maxQuantity : 1, media: addonMedia }) });
+      const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify({ title: addonForm.title, price: addonForm.price, description: addonForm.description, details: addonForm.details, allowMultiple: addonForm.allowMultiple, maxQuantity: addonForm.allowMultiple ? addonForm.maxQuantity : 1, media: addonMedia }) });
       const data = await res.json();
       if (res.ok) { toast({ title: editingAddon ? "Adicional actualizado" : "Adicional creado" }); setIsAddonModalOpen(false); fetchAdminAddons(); }
       else setAddonFormError(data.error || "Error al guardar");
@@ -597,7 +595,7 @@ export default function AdminDashboard() {
 
   const handleAddonMediaDelete = async (url: string) => {
     if (!editingAddon) return;
-    const res = await fetch(`/api/addons/${editingAddon.id}/media`, { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url }) });
+    const res = await fetch(`/api/addons/${editingAddon.id}/media`, { method: "DELETE", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify({ url }) });
     const data = await res.json();
     if (res.ok) { setAddonMedia(data.media); fetchAdminAddons(); }
     else toast({ title: "Error al eliminar", variant: "destructive" });
@@ -605,7 +603,7 @@ export default function AdminDashboard() {
 
   const handleDeleteAddon = async (id: string) => {
     if (!confirm("¿Eliminar este adicional?")) return;
-    const res = await fetch(`/api/addons/${id}`, { method: "DELETE" });
+    const res = await fetch(`/api/addons/${id}`, { method: "DELETE", credentials: "include" });
     if (res.ok) { toast({ title: "Adicional eliminado" }); fetchAdminAddons(); }
     else toast({ title: "Error al eliminar", variant: "destructive" });
   };
@@ -697,7 +695,7 @@ export default function AdminDashboard() {
     fetchReservas();
     fetchPlanBlocks();
     fetchDynamicPlans();
-    fetch("/api/pricing")
+    fetch("/api/pricing", { credentials: "include" })
       .then(r => r.json())
       .then(data => {
         if (data && data.tarifas) {
@@ -713,7 +711,7 @@ export default function AdminDashboard() {
         }
       })
       .catch(err => console.error("Error fetching pricing:", err));
-    fetch("/api/unit-blocks")
+    fetch("/api/unit-blocks", { credentials: "include" })
       .then(r => r.json())
       .then(data => { if (Array.isArray(data)) setUnitBlocks(data); })
       .catch(err => console.error("Error fetching unit blocks:", err));
@@ -725,7 +723,7 @@ export default function AdminDashboard() {
   
   const fetchPlanBlocks = async () => {
     try {
-      const response = await fetch("/api/plan-blocks");
+      const response = await fetch("/api/plan-blocks", { credentials: "include" });
       if (response.ok) {
         const data = await response.json();
         setPlanBlocks(data);
@@ -753,6 +751,7 @@ export default function AdminDashboard() {
       const response = await fetch("/api/plan-blocks", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify(normalizedForm)
       });
       
@@ -773,7 +772,7 @@ export default function AdminDashboard() {
 
   const handleDeletePlanBlock = async (id: string) => {
     try {
-      const response = await fetch(`/api/plan-blocks/${id}`, { method: "DELETE" });
+      const response = await fetch(`/api/plan-blocks/${id}`, { method: "DELETE", credentials: "include" });
       const data = await response.json();
       
       if (data.success) {
@@ -789,7 +788,7 @@ export default function AdminDashboard() {
 
   const fetchUnitBlocks = async () => {
     try {
-      const response = await fetch("/api/unit-blocks");
+      const response = await fetch("/api/unit-blocks", { credentials: "include" });
       if (response.ok) {
         const data = await response.json();
         setUnitBlocks(data);
@@ -809,6 +808,7 @@ export default function AdminDashboard() {
       const response = await fetch("/api/unit-blocks", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
           unitName: unitBlockForm.unitName,
           motivo: unitBlockForm.motivo || "Inhabilitada",
@@ -832,7 +832,7 @@ export default function AdminDashboard() {
 
   const handleDeleteUnitBlock = async (id: string) => {
     try {
-      const response = await fetch(`/api/unit-blocks/${id}`, { method: "DELETE" });
+      const response = await fetch(`/api/unit-blocks/${id}`, { method: "DELETE", credentials: "include" });
       const data = await response.json();
       if (data.success) {
         toast({ title: "Éxito", description: "Bloqueo de unidad eliminado" });
@@ -872,7 +872,7 @@ export default function AdminDashboard() {
 
   const fetchDynamicPlans = async () => {
     try {
-      const response = await fetch("/api/plans");
+      const response = await fetch("/api/plans", { credentials: "include" });
       if (response.ok) {
         const data = await response.json();
         setDynamicPlans(data);
@@ -908,6 +908,7 @@ export default function AdminDashboard() {
       await fetch("/api/plans/reorder", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ order: reordered.map(p => p.id) })
       });
     } catch (error) {
@@ -1014,6 +1015,7 @@ export default function AdminDashboard() {
       const response = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify(payload)
       });
       
@@ -1037,6 +1039,7 @@ export default function AdminDashboard() {
       const response = await fetch(`/api/plans/${planId}/toggle`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ desactivarOtros })
       });
       
@@ -1059,7 +1062,7 @@ export default function AdminDashboard() {
     }
 
     try {
-      const response = await fetch(`/api/plans/${planId}`, { method: "DELETE" });
+      const response = await fetch(`/api/plans/${planId}`, { method: "DELETE", credentials: "include" });
       const data = await response.json();
       
       if (data.success) {
@@ -1098,6 +1101,7 @@ export default function AdminDashboard() {
     setLoading(true);
     try {
       const response = await fetch("/api/listar-reservas.php", {
+        credentials: "include",
         headers: {
           'Cache-Control': 'no-cache',
           'Pragma': 'no-cache'
@@ -1137,6 +1141,7 @@ export default function AdminDashboard() {
       const response = await fetch("/api/crear-reserva-manual.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify(normalizedData)
       });
       const data = await response.json();
@@ -1304,6 +1309,7 @@ export default function AdminDashboard() {
         headers: {
           "Content-Type": "application/json"
         },
+        credentials: "include",
         body: JSON.stringify(normalizedPayload)
       });
       const data = await response.json();
@@ -1331,6 +1337,7 @@ export default function AdminDashboard() {
       const response = await fetch("/api/bulk-actions.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ action, referencias })
       });
       const data = await response.json();
@@ -1365,7 +1372,7 @@ export default function AdminDashboard() {
 
   const handleLogout = async () => {
     try {
-      await fetch("/api/logout.php", { method: "POST" });
+      await fetch("/api/logout.php", { method: "POST", credentials: "include" });
       setLocation("/admin/login");
     } catch (error) {
       setLocation("/admin/login");
@@ -1813,6 +1820,7 @@ export default function AdminDashboard() {
                       const res = await fetch("/api/pricing", {
                         method: "PUT",
                         headers: { "Content-Type": "application/json" },
+                        credentials: "include",
                         body: JSON.stringify(payload)
                       });
                       if (res.ok) {

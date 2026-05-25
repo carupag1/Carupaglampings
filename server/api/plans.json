@@ -1,5 +1,111 @@
 [
   {
+    "id": "estadia_para_pareja",
+    "nombre": "Estadía para pareja ",
+    "eslogan": "Una estadia muy acogedora para parejas ",
+    "descripcion": "",
+    "tipo": "normal",
+    "icono": "Star",
+    "color": "#38b814",
+    "estado": true,
+    "preventa": false,
+    "fechaInicio": null,
+    "fechaFin": null,
+    "precios": {
+      "entre_semana": 290000,
+      "viernes_domingo": 320000,
+      "especial": 390000
+    },
+    "incluye": [
+      "🛌 Alojamiento para dos personas",
+      "🍽️ Desayuno americano para dos",
+      "🛁 Jacuzzi climatizado y privado",
+      "🚿 Baño privado",
+      "❄️ Nevera mini en el domo",
+      "🐑🦙 Mini granja en su hábitat",
+      "🅿️ Parqueadero privado sin costo",
+      "🛜 Zona wifi en el restaurante",
+      "🕸️ Malla catamarán"
+    ],
+    "createdAt": "2026-05-19T19:30:17.426Z",
+    "updatedAt": "2026-05-20T02:17:26.124Z",
+    "precio": 0,
+    "campingIds": [
+      1,
+      2
+    ]
+  },
+  {
+    "id": "estadia_para_familia",
+    "nombre": "Estadía para Familia",
+    "eslogan": "Todo lo bueno se pasa en familia ",
+    "descripcion": "",
+    "tipo": "normal",
+    "icono": "Gift",
+    "color": "#8c2b69",
+    "estado": true,
+    "preventa": false,
+    "fechaInicio": null,
+    "fechaFin": null,
+    "precios": {
+      "entre_semana": 290000,
+      "viernes_domingo": 320000,
+      "especial": 390000
+    },
+    "incluye": [
+      "🛌 Alojamiento para dos personas",
+      "🍽️ Desayuno americano para dos",
+      "🛁 Jacuzzi climatizado y privado",
+      "🚿 Baño privado",
+      "❄️ Nevera mini en el domo",
+      "🐑🦙 Mini granja en su hábitat",
+      "🅿️ Parqueadero privado sin costo",
+      "🛜 Zona wifi en el restaurante",
+      "🕸️ Malla catamarán"
+    ],
+    "createdAt": "2026-05-19T19:36:05.444Z",
+    "updatedAt": "2026-05-20T02:17:45.366Z",
+    "precio": 0,
+    "campingIds": [
+      4
+    ]
+  },
+  {
+    "id": "estadia_para_parejas",
+    "nombre": "Estadia para parejas",
+    "eslogan": "Pasala bien en domo Natura premium",
+    "descripcion": "",
+    "tipo": "normal",
+    "icono": "Sparkles",
+    "color": "#8B5A2B",
+    "estado": true,
+    "preventa": false,
+    "fechaInicio": null,
+    "fechaFin": null,
+    "precios": {
+      "entre_semana": 290000,
+      "viernes_domingo": 320000,
+      "especial": 390000
+    },
+    "incluye": [
+      "🛌 Alojamiento para dos personas",
+      "🍽️ Desayuno americano para dos",
+      "🛁 Jacuzzi climatizado y privado",
+      "🚿 Baño privado",
+      "❄️ Nevera mini en el domo",
+      "🐑🦙 Mini granja en su hábitat",
+      "🅿️ Parqueadero privado sin costo",
+      "🛜 Zona wifi en el restaurante",
+      "📺 Televisión para Netflix"
+    ],
+    "createdAt": "2026-05-19T19:32:40.349Z",
+    "updatedAt": "2026-05-20T02:17:35.954Z",
+    "precio": 0,
+    "campingIds": [
+      3
+    ]
+  },
+  {
     "id": "pasa_dia_en_pareja_domo_natura_premium",
     "nombre": "Pasa día en pareja DOMO NATURA PREMIUM",
     "eslogan": "Dia perfecto en pareja ",
@@ -94,112 +200,6 @@
       1,
       2,
       3
-    ]
-  },
-  {
-    "id": "estadia_para_pareja",
-    "nombre": "Estadía para pareja ",
-    "eslogan": "Una estadia muy acogedora para parejas ",
-    "descripcion": "",
-    "tipo": "normal",
-    "icono": "Star",
-    "color": "#38b814",
-    "estado": true,
-    "preventa": false,
-    "fechaInicio": null,
-    "fechaFin": null,
-    "precios": {
-      "entre_semana": 290000,
-      "viernes_domingo": 320000,
-      "especial": 390000
-    },
-    "incluye": [
-      "🛌 Alojamiento para dos personas",
-      "🍽️ Desayuno americano para dos",
-      "🛁 Jacuzzi climatizado y privado",
-      "🚿 Baño privado",
-      "❄️ Nevera mini en el domo",
-      "🐑🦙 Mini granja en su hábitat",
-      "🅿️ Parqueadero privado sin costo",
-      "🛜 Zona wifi en el restaurante",
-      "🕸️ Malla catamarán"
-    ],
-    "createdAt": "2026-05-19T19:30:17.426Z",
-    "updatedAt": "2026-05-20T02:17:26.124Z",
-    "precio": 0,
-    "campingIds": [
-      1,
-      2
-    ]
-  },
-  {
-    "id": "estadia_para_parejas",
-    "nombre": "Estadia para parejas",
-    "eslogan": "Pasala bien en domo Natura premium",
-    "descripcion": "",
-    "tipo": "normal",
-    "icono": "Sparkles",
-    "color": "#8B5A2B",
-    "estado": true,
-    "preventa": false,
-    "fechaInicio": null,
-    "fechaFin": null,
-    "precios": {
-      "entre_semana": 290000,
-      "viernes_domingo": 320000,
-      "especial": 390000
-    },
-    "incluye": [
-      "🛌 Alojamiento para dos personas",
-      "🍽️ Desayuno americano para dos",
-      "🛁 Jacuzzi climatizado y privado",
-      "🚿 Baño privado",
-      "❄️ Nevera mini en el domo",
-      "🐑🦙 Mini granja en su hábitat",
-      "🅿️ Parqueadero privado sin costo",
-      "🛜 Zona wifi en el restaurante",
-      "📺 Televisión para Netflix"
-    ],
-    "createdAt": "2026-05-19T19:32:40.349Z",
-    "updatedAt": "2026-05-20T02:17:35.954Z",
-    "precio": 0,
-    "campingIds": [
-      3
-    ]
-  },
-  {
-    "id": "estadia_para_familia",
-    "nombre": "Estadía para Familia",
-    "eslogan": "Todo lo bueno se pasa en familia ",
-    "descripcion": "",
-    "tipo": "normal",
-    "icono": "Gift",
-    "color": "#8c2b69",
-    "estado": true,
-    "preventa": false,
-    "fechaInicio": null,
-    "fechaFin": null,
-    "precios": {
-      "entre_semana": 290000,
-      "viernes_domingo": 320000,
-      "especial": 390000
-    },
-    "incluye": [
-      "🛌 Alojamiento para dos personas",
-      "🍽️ Desayuno americano para dos",
-      "🛁 Jacuzzi climatizado y privado",
-      "🚿 Baño privado",
-      "❄️ Nevera mini en el domo",
-      "🐑🦙 Mini granja en su hábitat",
-      "🅿️ Parqueadero privado sin costo",
-      "🛜 Zona wifi en el restaurante",
-      "🕸️ Malla catamarán"
-    ],
-    "createdAt": "2026-05-19T19:36:05.444Z",
-    "updatedAt": "2026-05-20T02:17:45.366Z",
-    "precio": 0,
-    "campingIds": [
-      4
     ]
   }
 ]

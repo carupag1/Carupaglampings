@@ -7,6 +7,7 @@ import fs from "fs";
 import multer from "multer";
 import pg from "pg";
 import { spawn } from "child_process";
+import sharp from "sharp";
 
 async function transcodeToH264(inputPath: string): Promise<string> {
   const dir = path.dirname(inputPath);
@@ -37,6 +38,24 @@ async function transcodeToH264(inputPath: string): Promise<string> {
     });
     proc.on("error", reject);
   });
+}
+
+async function convertImageToJpeg(inputPath: string): Promise<string> {
+  const ext = path.extname(inputPath).toLowerCase();
+  const dir = path.dirname(inputPath);
+  const base = path.basename(inputPath, ext);
+  const outputPath = path.join(dir, `${base}.jpg`);
+
+  await sharp(inputPath)
+    .rotate()
+    .jpeg({ quality: 85, progressive: true })
+    .toFile(outputPath);
+
+  if (inputPath !== outputPath && fs.existsSync(inputPath)) {
+    fs.unlinkSync(inputPath);
+  }
+
+  return outputPath;
 }
 
 const { Pool } = pg;
@@ -851,7 +870,13 @@ export async function registerRoutes(
         fs.unlinkSync(inputPath);
         res.json({ url: `/images/banners/${outputFilename}`, type: "video" });
       } else {
-        res.json({ url: `/images/banners/${req.file.filename}`, type: "image" });
+        const ext = path.extname(req.file.filename).toLowerCase();
+        let filename = req.file.filename;
+        if (ext !== ".jpg" && ext !== ".jpeg") {
+          const outputPath = await convertImageToJpeg(req.file.path);
+          filename = path.basename(outputPath);
+        }
+        res.json({ url: `/images/banners/${filename}`, type: "image" });
       }
     } catch (e: any) { res.status(500).json({ error: e.message }); }
   });
@@ -1328,6 +1353,13 @@ export async function registerRoutes(
           const inputPath = path.join(process.cwd(), "public", "images", "addons", file.filename);
           const outputPath = await transcodeToH264(inputPath);
           filename = path.basename(outputPath);
+        } else {
+          const ext = path.extname(file.filename).toLowerCase();
+          if (ext !== ".jpg" && ext !== ".jpeg") {
+            const inputPath = path.join(process.cwd(), "public", "images", "addons", file.filename);
+            const outputPath = await convertImageToJpeg(inputPath);
+            filename = path.basename(outputPath);
+          }
         }
         const url = `/images/addons/${filename}`;
         addons[idx].media.push({ type: isVideo ? "video" : "image", url });
@@ -1429,6 +1461,13 @@ export async function registerRoutes(
         const inputPath = path.join(process.cwd(), "public", "images", "campings", req.file.filename);
         const outputPath = await transcodeToH264(inputPath);
         filename = path.basename(outputPath);
+      } else {
+        const ext = path.extname(req.file.filename).toLowerCase();
+        if (ext !== ".jpg" && ext !== ".jpeg") {
+          const inputPath = path.join(process.cwd(), "public", "images", "campings", req.file.filename);
+          const outputPath = await convertImageToJpeg(inputPath);
+          filename = path.basename(outputPath);
+        }
       }
       const imageUrl = `/images/campings/${filename}`;
       const campings = readCampings();

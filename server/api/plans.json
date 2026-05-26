@@ -141,20 +141,20 @@
   },
   {
     "id": "plan_salir_de_la_rutina",
-    "nombre": "Plan salir de la rutina ",
-    "eslogan": "Sal de la rutina unos dias al mes ",
-    "descripcion": "",
-    "tipo": "normal",
-    "icono": "TreePine",
+    "nombre": "Plan cuatrimoto y Armas hidrogel",
+    "eslogan": "Descanso con dosis de adrenalina",
+    "descripcion": "Disfruta de este plan desafiando la aventura con el romance de las montañas",
+    "tipo": "addon",
+    "icono": "Mountain",
     "color": "#19b34f",
     "estado": true,
     "preventa": false,
     "fechaInicio": null,
     "fechaFin": null,
     "precios": {
-      "entre_semana": 190000,
-      "viernes_domingo": 190000,
-      "especial": 190000
+      "entre_semana": 290000,
+      "viernes_domingo": 320000,
+      "especial": 390000
     },
     "incluye": [
       "Cena para dos personas(2 Hamburguesas/Dos cervezas micheladas)",
@@ -162,8 +162,8 @@
       "Poligono con hidrogel"
     ],
     "createdAt": "2026-05-19T19:25:03.204Z",
-    "updatedAt": "2026-05-20T02:13:38.101Z",
-    "precio": 0,
+    "updatedAt": "2026-05-26T01:12:18.470Z",
+    "precio": 190000,
     "campingIds": [
       1,
       2,

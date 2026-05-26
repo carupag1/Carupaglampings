@@ -1,0 +1,1 @@
+- [Data persistence architecture](data-persistence.md) — admin data migrated from JSON files to PostgreSQL; in-memory cache + background flush pattern

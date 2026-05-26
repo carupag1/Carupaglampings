@@ -96,6 +96,61 @@ const pool = new Pool({
   connectionString: process.env.DATABASE_URL
 });
 
+const dataCache: Record<string, any> = {};
+
+function readData(key: string): any {
+  return dataCache[key];
+}
+
+function writeData(key: string, value: any): void {
+  dataCache[key] = value;
+  pool.query(
+    `INSERT INTO app_data (key, value, updated_at) VALUES ($1, $2::jsonb, NOW())
+     ON CONFLICT (key) DO UPDATE SET value = $2::jsonb, updated_at = NOW()`,
+    [key, JSON.stringify(value)]
+  ).catch((err: any) => console.error(`[writeData] ${key}:`, err.message));
+}
+
+function logAudit(action: string, entity: string, entityId: string | null, description: string): void {
+  pool.query(
+    `INSERT INTO audit_log (action, entity, entity_id, description) VALUES ($1, $2, $3, $4)`,
+    [action, entity, entityId, description]
+  ).catch((err: any) => console.error('[audit]', err.message));
+}
+
+async function initDataCache(): Promise<void> {
+  const DATA_KEYS: Array<{ key: string; file: string; default: any }> = [
+    { key: 'campings',     file: 'campings.json',     default: [] },
+    { key: 'addons',       file: 'addons.json',       default: [] },
+    { key: 'banners',      file: 'banners.json',      default: [] },
+    { key: 'plans',        file: 'plans.json',        default: [] },
+    { key: 'plan-blocks',  file: 'plan-blocks.json',  default: [] },
+    { key: 'unit-blocks',  file: 'unit-blocks.json',  default: [] },
+    { key: 'pricing',      file: 'pricing.json',      default: {} },
+  ];
+  for (const { key, file, default: def } of DATA_KEYS) {
+    try {
+      const row = await pool.query('SELECT value FROM app_data WHERE key = $1', [key]);
+      if (row.rows.length > 0) {
+        dataCache[key] = row.rows[0].value;
+      } else {
+        const filePath = path.join(process.cwd(), 'server', 'api', file);
+        let value = def;
+        try { if (fs.existsSync(filePath)) value = JSON.parse(fs.readFileSync(filePath, 'utf-8')); } catch {}
+        dataCache[key] = value;
+        await pool.query(
+          `INSERT INTO app_data (key, value) VALUES ($1, $2::jsonb) ON CONFLICT (key) DO NOTHING`,
+          [key, JSON.stringify(value)]
+        );
+      }
+    } catch (err: any) {
+      console.error(`[initDataCache] ${key}:`, err.message);
+      dataCache[key] = def;
+    }
+  }
+  console.log('[data] Cache loaded from PostgreSQL');
+}
+
 const uploadStorage = multer.diskStorage({
   destination: (req, file, cb) => {
     const uploadDir = path.join(process.cwd(), "public", "uploads");
@@ -147,6 +202,23 @@ async function ensurePostgresSchema() {
         comprobante TEXT
       )
     `);
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS app_data (
+        key TEXT PRIMARY KEY,
+        value JSONB NOT NULL,
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      )
+    `);
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS audit_log (
+        id SERIAL PRIMARY KEY,
+        ts TIMESTAMPTZ DEFAULT NOW(),
+        action TEXT NOT NULL,
+        entity TEXT NOT NULL,
+        entity_id TEXT,
+        description TEXT
+      )
+    `);
     console.log("PostgreSQL schema verified");
   } catch (error) {
     console.error("Error ensuring PostgreSQL schema:", error);
@@ -158,6 +230,7 @@ export async function registerRoutes(
   app: Express
 ): Promise<Server> {
   await ensurePostgresSchema();
+  await initDataCache();
 
   app.get("/api/listar-reservas.php", async (req, res) => {
     try {
@@ -646,26 +719,8 @@ export async function registerRoutes(
   });
 
   // ============ Plan Blocks API ============
-  const planBlocksFile = path.join(process.cwd(), "server", "api", "plan-blocks.json");
-
-  const ensurePlanBlocksFile = () => {
-    if (!fs.existsSync(planBlocksFile)) {
-      fs.writeFileSync(planBlocksFile, JSON.stringify([], null, 2));
-    }
-  };
-
-  const readPlanBlocks = (): any[] => {
-    ensurePlanBlocksFile();
-    try {
-      return JSON.parse(fs.readFileSync(planBlocksFile, "utf-8"));
-    } catch {
-      return [];
-    }
-  };
-
-  const writePlanBlocks = (blocks: any[]) => {
-    fs.writeFileSync(planBlocksFile, JSON.stringify(blocks, null, 2));
-  };
+  const readPlanBlocks = (): any[] => (readData('plan-blocks') as any[]) || [];
+  const writePlanBlocks = (blocks: any[]) => writeData('plan-blocks', blocks);
 
   app.get("/api/plan-blocks", (req, res) => {
     try {
@@ -730,7 +785,7 @@ export async function registerRoutes(
 
       blocks.push(newBlock);
       writePlanBlocks(blocks);
-
+      logAudit('CREATE', 'plan-block', newBlock.id, `Bloqueó fechas ${normalizedStart?.substring(0,10)} – ${normalizedEnd?.substring(0,10)} para plan "${planId}"`);
       res.json({ success: true, block: newBlock });
     } catch (error: any) {
       res.status(500).json({ success: false, error: error.message });
@@ -757,22 +812,8 @@ export async function registerRoutes(
   });
 
   // ============ Unit Blocks API ============
-  const unitBlocksFile = path.join(process.cwd(), "server", "api", "unit-blocks.json");
-
-  const readUnitBlocks = (): any[] => {
-    try {
-      if (!fs.existsSync(unitBlocksFile)) {
-        fs.writeFileSync(unitBlocksFile, JSON.stringify([], null, 2));
-      }
-      return JSON.parse(fs.readFileSync(unitBlocksFile, "utf-8"));
-    } catch {
-      return [];
-    }
-  };
-
-  const writeUnitBlocks = (blocks: any[]) => {
-    fs.writeFileSync(unitBlocksFile, JSON.stringify(blocks, null, 2));
-  };
+  const readUnitBlocks = (): any[] => (readData('unit-blocks') as any[]) || [];
+  const writeUnitBlocks = (blocks: any[]) => writeData('unit-blocks', blocks);
 
   app.get("/api/unit-blocks", (req, res) => {
     try {
@@ -822,7 +863,7 @@ export async function registerRoutes(
 
       blocks.push(newBlock);
       writeUnitBlocks(blocks);
-
+      logAudit('CREATE', 'unit-block', newBlock.id, `Bloqueó fechas de la unidad "${unitName}"${motivo ? ': ' + motivo : ''}`);
       res.json({ success: true, block: newBlock });
     } catch (error: any) {
       res.status(500).json({ success: false, error: error.message });
@@ -848,18 +889,8 @@ export async function registerRoutes(
   });
 
   // ============ Banners API ============
-  const bannersFile = path.join(process.cwd(), "server", "api", "banners.json");
-
-  const readBanners = (): any[] => {
-    try {
-      if (!fs.existsSync(bannersFile)) fs.writeFileSync(bannersFile, JSON.stringify([], null, 2));
-      return JSON.parse(fs.readFileSync(bannersFile, "utf-8"));
-    } catch { return []; }
-  };
-
-  const writeBanners = (banners: any[]) => {
-    fs.writeFileSync(bannersFile, JSON.stringify(banners, null, 2));
-  };
+  const readBanners = (): any[] => (readData('banners') as any[]) || [];
+  const writeBanners = (banners: any[]) => writeData('banners', banners);
 
   const bannerUploadStorage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -932,6 +963,7 @@ export async function registerRoutes(
       };
       banners.push(newBanner);
       writeBanners(banners);
+      logAudit('CREATE', 'banner', newBanner.id, `Creó banner "${newBanner.titulo || newBanner.texto?.substring(0, 40)}"`);
       res.json({ success: true, banner: newBanner });
     } catch (e: any) { res.status(500).json({ error: e.message }); }
   });
@@ -944,6 +976,7 @@ export async function registerRoutes(
       if (idx === -1) return res.status(404).json({ error: "Banner no encontrado" });
       banners[idx] = { ...banners[idx], ...req.body, id };
       writeBanners(banners);
+      logAudit('UPDATE', 'banner', id, `Actualizó banner "${banners[idx].titulo}"`);
       res.json({ success: true, banner: banners[idx] });
     } catch (e: any) { res.status(500).json({ error: e.message }); }
   });
@@ -956,6 +989,7 @@ export async function registerRoutes(
       if (idx === -1) return res.status(404).json({ error: "Banner no encontrado" });
       banners[idx].activo = !banners[idx].activo;
       writeBanners(banners);
+      logAudit('UPDATE', 'banner', id, `${banners[idx].activo ? 'Activó' : 'Desactivó'} banner "${banners[idx].titulo}"`);
       res.json({ success: true, banner: banners[idx] });
     } catch (e: any) { res.status(500).json({ error: e.message }); }
   });
@@ -965,30 +999,18 @@ export async function registerRoutes(
       const { id } = req.params;
       let banners = readBanners();
       const initial = banners.length;
+      const deleted = banners.find((b: any) => b.id === id);
       banners = banners.filter((b: any) => b.id !== id);
       if (banners.length === initial) return res.status(404).json({ error: "Banner no encontrado" });
       writeBanners(banners);
+      logAudit('DELETE', 'banner', id, `Eliminó banner "${deleted?.titulo || id}"`);
       res.json({ success: true });
     } catch (e: any) { res.status(500).json({ error: e.message }); }
   });
 
   // ============ Dynamic Plans API ============
-  const plansFile = path.join(process.cwd(), "server", "api", "plans.json");
-
-  const readPlans = (): any[] => {
-    try {
-      if (!fs.existsSync(plansFile)) {
-        return [];
-      }
-      return JSON.parse(fs.readFileSync(plansFile, "utf-8"));
-    } catch {
-      return [];
-    }
-  };
-
-  const writePlans = (plans: any[]) => {
-    fs.writeFileSync(plansFile, JSON.stringify(plans, null, 2));
-  };
+  const readPlans = (): any[] => (readData('plans') as any[]) || [];
+  const writePlans = (plans: any[]) => writeData('plans', plans);
 
   app.get("/api/plans", (req, res) => {
     try {
@@ -1090,7 +1112,7 @@ export async function registerRoutes(
 
       plans.push(newPlan);
       writePlans(plans);
-
+      logAudit('CREATE', 'plan', newPlan.id, `Creó plan "${nombre}"`);
       res.json({ success: true, plan: newPlan });
     } catch (error: any) {
       res.status(500).json({ success: false, error: error.message });
@@ -1157,7 +1179,7 @@ export async function registerRoutes(
 
       plans[planIndex] = updatedPlan;
       writePlans(plans);
-
+      logAudit('UPDATE', 'plan', id, `Actualizó plan "${updatedPlan.nombre}"`);
       res.json({ success: true, plan: updatedPlan });
     } catch (error: any) {
       res.status(500).json({ success: false, error: error.message });
@@ -1186,7 +1208,7 @@ export async function registerRoutes(
 
       plans[planIndex].estado = newState;
       writePlans(plans);
-
+      logAudit('UPDATE', 'plan', id, `${newState ? 'Activó' : 'Desactivó'} plan "${plans[planIndex].nombre}"`);
       res.json({ success: true, plan: plans[planIndex] });
     } catch (error: any) {
       res.status(500).json({ success: false, error: error.message });
@@ -1290,14 +1312,8 @@ export async function registerRoutes(
   });
 
   // ============ Addons CRUD ============
-  const addonsFilePath = path.join(process.cwd(), "server", "api", "addons.json");
-
-  const readAddons = (): any[] => {
-    try {
-      return JSON.parse(fs.readFileSync(addonsFilePath, "utf-8"));
-    } catch { return []; }
-  };
-  const writeAddons = (data: any[]) => fs.writeFileSync(addonsFilePath, JSON.stringify(data, null, 2));
+  const readAddons = (): any[] => (readData('addons') as any[]) || [];
+  const writeAddons = (data: any[]) => writeData('addons', data);
 
   const addonMediaStorage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -1338,6 +1354,7 @@ export async function registerRoutes(
       };
       addons.push(newAddon);
       writeAddons(addons);
+      logAudit('CREATE', 'addon', newAddon.id, `Creó adicional "${title}"`);
       res.json({ success: true, addon: newAddon });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
@@ -1362,6 +1379,7 @@ export async function registerRoutes(
         media: media ?? addons[idx].media ?? []
       };
       writeAddons(addons);
+      logAudit('UPDATE', 'addon', id, `Actualizó adicional "${addons[idx].title}"`);
       res.json({ success: true, addon: addons[idx] });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
@@ -1429,14 +1447,8 @@ export async function registerRoutes(
   });
 
   // ============ Campings CRUD ============
-  const campingsFilePath = path.join(process.cwd(), "server", "api", "campings.json");
-
-  const readCampings = (): any[] => {
-    try {
-      return JSON.parse(fs.readFileSync(campingsFilePath, "utf-8"));
-    } catch { return []; }
-  };
-  const writeCampings = (data: any[]) => fs.writeFileSync(campingsFilePath, JSON.stringify(data, null, 2));
+  const readCampings = (): any[] => (readData('campings') as any[]) || [];
+  const writeCampings = (data: any[]) => writeData('campings', data);
 
   app.get("/api/campings", (req, res) => res.json(readCampings()));
 
@@ -1457,6 +1469,7 @@ export async function registerRoutes(
         ...(image !== undefined && { image })
       };
       writeCampings(campings);
+      logAudit('UPDATE', 'camping', id, `Actualizó glamping "${campings[idx].name}"`);
       res.json({ success: true, camping: campings[idx] });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
@@ -1508,6 +1521,7 @@ export async function registerRoutes(
       campings[idx].images = images;
       campings[idx].image = images[0];
       writeCampings(campings);
+      logAudit('UPLOAD', 'camping', id, `Subió ${isVideoFile(req.file!) ? 'video' : 'imagen'} al glamping "${campings[idx].name}"`);
       res.json({ success: true, imageUrl, camping: campings[idx] });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
@@ -1525,6 +1539,7 @@ export async function registerRoutes(
       if (campings[idx].images.length === 0) campings[idx].images = ["/images/glamping-placeholder.svg"];
       if (campings[idx].image === imageUrl) campings[idx].image = campings[idx].images[0];
       writeCampings(campings);
+      logAudit('DELETE', 'camping', id, `Eliminó imagen del glamping "${campings[idx].name}"`);
       res.json({ success: true, camping: campings[idx] });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
@@ -1541,18 +1556,16 @@ export async function registerRoutes(
       if (idx === -1) return res.status(404).json({ error: "Glamping no encontrado" });
       campings[idx].image = imageUrl;
       writeCampings(campings);
+      logAudit('UPDATE', 'camping', id, `Cambió portada del glamping "${campings[idx].name}"`);
       res.json({ success: true, camping: campings[idx] });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   });
 
-  const PRICING_PATH = path.join(process.cwd(), "server/api/pricing.json");
-
   app.get("/api/pricing", (req, res) => {
     try {
-      const data = fs.readFileSync(PRICING_PATH, "utf-8");
-      res.json(JSON.parse(data));
+      res.json(readData('pricing') || {});
     } catch (error: any) {
       res.status(500).json({ error: "Error leyendo configuración de precios" });
     }
@@ -1560,10 +1573,30 @@ export async function registerRoutes(
 
   app.put("/api/pricing", (req, res) => {
     try {
-      fs.writeFileSync(PRICING_PATH, JSON.stringify(req.body, null, 2));
+      writeData('pricing', req.body);
+      logAudit('UPDATE', 'pricing', null, 'Actualizó tarifas y configuración de precios');
       res.json({ success: true });
     } catch (error: any) {
       res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  app.get("/api/audit-log", async (req: any, res) => {
+    try {
+      const limit = Math.min(parseInt(req.query.limit as string) || 200, 500);
+      const entity = req.query.entity as string | undefined;
+      let query = "SELECT * FROM audit_log";
+      const params: any[] = [];
+      if (entity && entity !== 'all') {
+        params.push(entity);
+        query += ` WHERE entity = $1`;
+      }
+      query += ` ORDER BY ts DESC LIMIT $${params.length + 1}`;
+      params.push(limit);
+      const result = await pool.query(query, params);
+      res.json(result.rows);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
     }
   });
 

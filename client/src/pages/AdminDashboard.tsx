@@ -252,6 +252,29 @@ export default function AdminDashboard() {
   ];
   const PASO_LABELS: Record<string, string> = { plan: "Plan", dates: "Fechas", addons: "Adicionales", guest: "Huésped", payment: "Pago" };
 
+  type AuditEntry = {
+    id: number;
+    ts: string;
+    action: string;
+    entity: string;
+    entity_id: string | null;
+    description: string;
+  };
+  const [auditLog, setAuditLog] = useState<AuditEntry[]>([]);
+  const [auditFilter, setAuditFilter] = useState("all");
+  const [auditLoading, setAuditLoading] = useState(false);
+
+  const fetchAuditLog = async (entity = "all") => {
+    setAuditLoading(true);
+    try {
+      const params = entity !== "all" ? `?entity=${entity}` : "";
+      const res = await fetch(`/api/audit-log${params}`);
+      const data = await res.json();
+      setAuditLog(Array.isArray(data) ? data : []);
+    } catch {}
+    setAuditLoading(false);
+  };
+
   const [banners, setBanners] = useState<any[]>([]);
   const [isBannerModalOpen, setIsBannerModalOpen] = useState(false);
   const [editingBanner, setEditingBanner] = useState<any>(null);
@@ -1430,6 +1453,7 @@ export default function AdminDashboard() {
               <TabsTrigger value="adicionales" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm text-xs">Adicionales</TabsTrigger>
               <TabsTrigger value="credenciales" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm text-xs">Credenciales</TabsTrigger>
               <TabsTrigger value="banners" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm text-xs">Banners</TabsTrigger>
+              <TabsTrigger value="actividad" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm text-xs" onClick={() => fetchAuditLog(auditFilter)}>Actividad</TabsTrigger>
             </TabsList>
           )}
 
@@ -2617,6 +2641,78 @@ export default function AdminDashboard() {
                 </div>
               </div>
             )}
+          </TabsContent>
+
+          <TabsContent value="actividad">
+            <div className="bg-white rounded-3xl shadow-sm border border-stone-200 p-6">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-xl font-semibold text-stone-800">Registro de Actividad</h2>
+                  <p className="text-sm text-stone-500 mt-1">Historial de cambios realizados en el panel de administración</p>
+                </div>
+                <Button variant="outline" size="sm" className="rounded-xl" onClick={() => fetchAuditLog(auditFilter)}>
+                  Actualizar
+                </Button>
+              </div>
+
+              <div className="flex gap-2 flex-wrap mb-4">
+                {["all","camping","plan","addon","banner","pricing","plan-block","unit-block"].map(e => (
+                  <button
+                    key={e}
+                    onClick={() => { setAuditFilter(e); fetchAuditLog(e); }}
+                    className={`px-3 py-1 text-xs rounded-full border transition-colors ${auditFilter === e ? "bg-stone-800 text-white border-stone-800" : "bg-white text-stone-600 border-stone-300 hover:bg-stone-50"}`}
+                  >
+                    {{ all: "Todo", camping: "Glampings", plan: "Planes", addon: "Adicionales", banner: "Banners", pricing: "Tarifas", "plan-block": "Bloqueos Plan", "unit-block": "Bloqueos Unidad" }[e] || e}
+                  </button>
+                ))}
+              </div>
+
+              {auditLoading ? (
+                <div className="text-center py-12 text-stone-400 text-sm">Cargando...</div>
+              ) : auditLog.length === 0 ? (
+                <div className="text-center py-16">
+                  <div className="text-4xl mb-3">📋</div>
+                  <p className="text-stone-500 text-sm">No hay actividad registrada aún.</p>
+                  <p className="text-stone-400 text-xs mt-1">Los cambios realizados desde ahora aparecerán aquí.</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {auditLog.map((entry) => {
+                    const date = new Date(entry.ts);
+                    const dateStr = date.toLocaleDateString("es-CO", { day: "2-digit", month: "short", year: "numeric" });
+                    const timeStr = date.toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit" });
+                    const actionColor: Record<string, string> = {
+                      CREATE: "bg-green-100 text-green-700",
+                      UPDATE: "bg-blue-100 text-blue-700",
+                      DELETE: "bg-red-100 text-red-700",
+                      UPLOAD: "bg-purple-100 text-purple-700",
+                    };
+                    const entityLabel: Record<string, string> = {
+                      camping: "Glamping", plan: "Plan", addon: "Adicional",
+                      banner: "Banner", pricing: "Tarifas", "plan-block": "Bloqueo Plan", "unit-block": "Bloqueo Unidad"
+                    };
+                    return (
+                      <div key={entry.id} className="flex items-start gap-3 p-3 rounded-xl border border-stone-100 hover:bg-stone-50 transition-colors">
+                        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full shrink-0 mt-0.5 ${actionColor[entry.action] || "bg-stone-100 text-stone-600"}`}>
+                          {entry.action}
+                        </span>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm text-stone-800 leading-snug">{entry.description}</p>
+                          <p className="text-xs text-stone-400 mt-0.5">
+                            <span className="font-medium text-stone-500">{entityLabel[entry.entity] || entry.entity}</span>
+                            {entry.entity_id && <span className="ml-1 opacity-60">#{entry.entity_id.substring(0, 12)}</span>}
+                          </p>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <p className="text-xs text-stone-500">{dateStr}</p>
+                          <p className="text-xs text-stone-400">{timeStr}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </TabsContent>
 
         </>

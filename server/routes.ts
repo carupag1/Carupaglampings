@@ -8,6 +8,7 @@ import multer from "multer";
 import pg from "pg";
 import { spawn } from "child_process";
 import sharp from "sharp";
+import ffmpegPath from "ffmpeg-static";
 
 async function transcodeToH264(inputPath: string, explicitOutputPath?: string): Promise<string> {
   const dir = path.dirname(inputPath);
@@ -25,7 +26,7 @@ async function transcodeToH264(inputPath: string, explicitOutputPath?: string): 
       "-y",
       outputPath
     ];
-    const proc = spawn("ffmpeg", args);
+    const proc = spawn(ffmpegPath || "ffmpeg", args);
     proc.on("close", (code) => {
       if (code === 0) {
         if (inputPath !== outputPath && fs.existsSync(inputPath)) {

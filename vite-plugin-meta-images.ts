@@ -18,25 +18,29 @@ export function metaImagesPlugin(): Plugin {
 
       // Check if opengraph image exists in public directory
       const publicDir = path.resolve(process.cwd(), 'client', 'public');
-      const opengraphPngPath = path.join(publicDir, 'opengraph.png');
-      const opengraphJpgPath = path.join(publicDir, 'opengraph.jpg');
-      const opengraphJpegPath = path.join(publicDir, 'opengraph.jpeg');
+      const candidates = [
+        { path: path.join(publicDir, 'opengraph-v2.png'), name: 'opengraph-v2.png' },
+        { path: path.join(publicDir, 'opengraph-v2.jpg'), name: 'opengraph-v2.jpg' },
+        { path: path.join(publicDir, 'opengraph-v2.jpeg'), name: 'opengraph-v2.jpeg' },
+        { path: path.join(publicDir, 'opengraph.png'), name: 'opengraph.png' },
+        { path: path.join(publicDir, 'opengraph.jpg'), name: 'opengraph.jpg' },
+        { path: path.join(publicDir, 'opengraph.jpeg'), name: 'opengraph.jpeg' },
+      ];
 
-      let imageExt: string | null = null;
-      if (fs.existsSync(opengraphPngPath)) {
-        imageExt = 'png';
-      } else if (fs.existsSync(opengraphJpgPath)) {
-        imageExt = 'jpg';
-      } else if (fs.existsSync(opengraphJpegPath)) {
-        imageExt = 'jpeg';
+      let imageName: string | null = null;
+      for (const c of candidates) {
+        if (fs.existsSync(c.path)) {
+          imageName = c.name;
+          break;
+        }
       }
 
-      if (!imageExt) {
+      if (!imageName) {
         log('[meta-images] OpenGraph image not found, skipping meta tag updates');
         return html;
       }
 
-      const imageUrl = `${baseUrl}/opengraph.${imageExt}`;
+      const imageUrl = `${baseUrl}/${imageName}`;
 
       log('[meta-images] updating meta image tags to:', imageUrl);
 

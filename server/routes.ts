@@ -9,6 +9,7 @@ import pg from "pg";
 import { spawn } from "child_process";
 import sharp from "sharp";
 import ffmpegPath from "ffmpeg-static";
+import convert from "heic-convert";
 
 async function transcodeToH264(inputPath: string, explicitOutputPath?: string): Promise<string> {
   const dir = path.dirname(inputPath);
@@ -41,16 +42,29 @@ async function transcodeToH264(inputPath: string, explicitOutputPath?: string): 
   });
 }
 
+const HEIC_EXTS = new Set([".heic", ".heif"]);
+
 async function convertImageToJpeg(inputPath: string): Promise<string> {
   const ext = path.extname(inputPath).toLowerCase();
   const dir = path.dirname(inputPath);
   const base = path.basename(inputPath, ext);
   const outputPath = path.join(dir, `${base}.jpg`);
 
-  await sharp(inputPath)
-    .rotate()
-    .jpeg({ quality: 85, progressive: true })
-    .toFile(outputPath);
+  if (HEIC_EXTS.has(ext)) {
+    // sharp cannot decode HEIC without libheif — use heic-convert (pure JS)
+    const inputBuffer = fs.readFileSync(inputPath);
+    const jpegBuffer = await convert({
+      buffer: inputBuffer,
+      format: "JPEG",
+      quality: 0.85,
+    });
+    fs.writeFileSync(outputPath, Buffer.from(jpegBuffer));
+  } else {
+    await sharp(inputPath)
+      .rotate()
+      .jpeg({ quality: 85, progressive: true })
+      .toFile(outputPath);
+  }
 
   if (inputPath !== outputPath && fs.existsSync(inputPath)) {
     fs.unlinkSync(inputPath);

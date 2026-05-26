@@ -9,10 +9,10 @@ import pg from "pg";
 import { spawn } from "child_process";
 import sharp from "sharp";
 
-async function transcodeToH264(inputPath: string): Promise<string> {
+async function transcodeToH264(inputPath: string, explicitOutputPath?: string): Promise<string> {
   const dir = path.dirname(inputPath);
   const base = path.basename(inputPath, path.extname(inputPath));
-  const outputPath = path.join(dir, `${base}.mp4`);
+  const outputPath = explicitOutputPath || path.join(dir, `${base}.mp4`);
 
   return new Promise((resolve, reject) => {
     const args = [

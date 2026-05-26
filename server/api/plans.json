@@ -112,7 +112,7 @@
     "descripcion": "9:00 am - 6:00 pm",
     "tipo": "pasa_dia",
     "icono": "Flame",
-    "color": "#ff0a16",
+    "color": "#eae434",
     "estado": true,
     "preventa": false,
     "fechaInicio": null,
@@ -133,7 +133,7 @@
       "🛜 Zona wifi en el restaurante"
     ],
     "createdAt": "2026-05-19T19:05:07.666Z",
-    "updatedAt": "2026-05-20T02:16:31.369Z",
+    "updatedAt": "2026-05-26T01:10:12.947Z",
     "precio": 0,
     "campingIds": [
       3

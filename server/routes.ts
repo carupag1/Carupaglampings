@@ -59,6 +59,22 @@ async function convertImageToJpeg(inputPath: string): Promise<string> {
   return outputPath;
 }
 
+const VIDEO_EXTS = new Set([".mp4", ".mov", ".avi", ".mkv", ".webm", ".m4v", ".3gp"]);
+const IMAGE_EXTS = new Set([".jpg", ".jpeg", ".png", ".gif", ".webp", ".avif", ".tiff", ".tif", ".heic", ".heif", ".bmp"]);
+
+function isVideoFile(file: { mimetype: string; originalname: string }): boolean {
+  const ext = path.extname(file.originalname).toLowerCase();
+  if (VIDEO_EXTS.has(ext)) return true;
+  if (IMAGE_EXTS.has(ext)) return false;
+  return file.mimetype.startsWith("video/");
+}
+
+function isMediaFile(file: { mimetype: string; originalname: string }): boolean {
+  const ext = path.extname(file.originalname).toLowerCase();
+  return VIDEO_EXTS.has(ext) || IMAGE_EXTS.has(ext) ||
+    file.mimetype.startsWith("image/") || file.mimetype.startsWith("video/");
+}
+
 const { Pool } = pg;
 
 // PostgreSQL connection pool
@@ -847,7 +863,7 @@ export async function registerRoutes(
     storage: bannerUploadStorage,
     limits: { fileSize: 100 * 1024 * 1024 },
     fileFilter: (req, file, cb) => {
-      if (file.mimetype.startsWith("image/") || file.mimetype.startsWith("video/")) cb(null, true);
+      if (isMediaFile(file)) cb(null, true);
       else cb(new Error("Solo se permiten imágenes o videos"));
     }
   });
@@ -863,12 +879,12 @@ export async function registerRoutes(
   app.post("/api/banners/upload-image", uploadBannerImage.single("image"), async (req: any, res) => {
     try {
       if (!req.file) return res.status(400).json({ error: "No se recibió archivo" });
-      if (req.file.mimetype.startsWith("video/")) {
+      if (isVideoFile(req.file)) {
         const inputPath = req.file.path;
         const outputFilename = req.file.filename.replace(/\.[^.]+$/, "") + "_h264.mp4";
         const outputPath = path.join(path.dirname(inputPath), outputFilename);
         await transcodeToH264(inputPath, outputPath);
-        fs.unlinkSync(inputPath);
+        if (fs.existsSync(inputPath)) fs.unlinkSync(inputPath);
         res.json({ url: `/images/banners/${outputFilename}`, type: "video" });
       } else {
         const ext = path.extname(req.file.filename).toLowerCase();
@@ -1284,7 +1300,7 @@ export async function registerRoutes(
     storage: addonMediaStorage,
     limits: { fileSize: 100 * 1024 * 1024 },
     fileFilter: (req, file, cb) => {
-      if (file.mimetype.startsWith("image/") || file.mimetype.startsWith("video/")) cb(null, true);
+      if (isMediaFile(file)) cb(null, true);
       else cb(new Error("Solo se permiten imágenes y videos"));
     }
   });
@@ -1348,7 +1364,7 @@ export async function registerRoutes(
       if (idx === -1) return res.status(404).json({ error: "Adicional no encontrado" });
       if (!addons[idx].media) addons[idx].media = [];
       for (const file of files) {
-        const isVideo = file.mimetype.startsWith("video/");
+        const isVideo = isVideoFile(file);
         let filename = file.filename;
         if (isVideo) {
           const inputPath = path.join(process.cwd(), "public", "images", "addons", file.filename);
@@ -1448,7 +1464,7 @@ export async function registerRoutes(
     storage: campingImageStorage,
     limits: { fileSize: 100 * 1024 * 1024 },
     fileFilter: (req, file, cb) => {
-      if (file.mimetype.startsWith("image/") || file.mimetype.startsWith("video/")) cb(null, true);
+      if (isMediaFile(file)) cb(null, true);
       else cb(new Error("Solo se permiten imágenes y videos"));
     }
   });
@@ -1458,7 +1474,7 @@ export async function registerRoutes(
       const { id } = req.params;
       if (!req.file) return res.status(400).json({ error: "No se recibió archivo" });
       let filename = req.file.filename;
-      if (req.file.mimetype.startsWith("video/")) {
+      if (isVideoFile(req.file)) {
         const inputPath = path.join(process.cwd(), "public", "images", "campings", req.file.filename);
         const outputPath = await transcodeToH264(inputPath);
         filename = path.basename(outputPath);

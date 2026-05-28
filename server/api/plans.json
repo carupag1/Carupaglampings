@@ -1,5 +1,105 @@
 [
   {
+<<<<<<< HEAD
+=======
+    "id": "pasa_dia_en_pareja_domo_natura_premium",
+    "nombre": "Pasa día en pareja DOMO NATURA PREMIUM",
+    "eslogan": "Dia perfecto en pareja ",
+    "descripcion": "9:00 am - 6:00 pm",
+    "tipo": "pasa_dia",
+    "icono": "Flame",
+    "color": "#ff0a16",
+    "estado": true,
+    "preventa": false,
+    "fechaInicio": null,
+    "fechaFin": null,
+    "precios": {
+      "entre_semana": 200000,
+      "viernes_domingo": 300000,
+      "especial": 300000
+    },
+    "incluye": [
+      "🛌 Alojamiento para dos personas",
+      "🍽️ Desayuno americano o pizza mediana",
+      "🛁 Jacuzzi climatizado y privado",
+      "🚿 Baño privado",
+      "❄️ Nevera mini en el domo",
+      "🐑🦙 Mini granja en su hábitat",
+      "🅿️ Parqueadero privado sin costo",
+      "🛜 Zona wifi en el restaurante"
+    ],
+    "createdAt": "2026-05-19T19:05:07.666Z",
+    "updatedAt": "2026-05-20T02:16:31.369Z",
+    "precio": 0,
+    "campingIds": [
+      3
+    ]
+  },
+  {
+    "id": "plan_salir_de_la_rutina",
+    "nombre": "Plan salir de la rutina ",
+    "eslogan": "Sal de la rutina unos dias al mes ",
+    "descripcion": "",
+    "tipo": "normal",
+    "icono": "TreePine",
+    "color": "#19b34f",
+    "estado": true,
+    "preventa": false,
+    "fechaInicio": null,
+    "fechaFin": null,
+    "precios": {
+      "entre_semana": 190000,
+      "viernes_domingo": 190000,
+      "especial": 190000
+    },
+    "incluye": [
+      "Cena para dos personas(2 Hamburguesas/Dos cervezas micheladas)",
+      "Paseo en cuatrimoto para dos personas",
+      "Poligono con hidrogel"
+    ],
+    "createdAt": "2026-05-19T19:25:03.204Z",
+    "updatedAt": "2026-05-20T02:13:38.101Z",
+    "precio": 0,
+    "campingIds": [
+      1,
+      2,
+      3
+    ]
+  },
+  {
+    "id": "plan_romantico",
+    "nombre": "Plan romantico ",
+    "eslogan": "Plan romantico para ti y tu pareja ",
+    "descripcion": "",
+    "tipo": "addon",
+    "icono": "Tag",
+    "color": "#a812ab",
+    "estado": true,
+    "preventa": false,
+    "fechaInicio": null,
+    "fechaFin": null,
+    "precios": {
+      "entre_semana": 290000,
+      "viernes_domingo": 320000,
+      "especial": 390000
+    },
+    "incluye": [
+      "Cena para dos personas (a elección plato fuerte) Dos copas de vino o limonada",
+      "Decoracion en la mesa",
+      "Llaveros de recuerdo",
+      "Fogata con masmelos"
+    ],
+    "createdAt": "2026-05-19T19:26:29.525Z",
+    "updatedAt": "2026-05-25T21:33:37.950Z",
+    "precio": 170000,
+    "campingIds": [
+      1,
+      2,
+      3
+    ]
+  },
+  {
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
     "id": "estadia_para_pareja",
     "nombre": "Estadía para pareja ",
     "eslogan": "Una estadia muy acogedora para parejas ",
@@ -36,6 +136,7 @@
     ]
   },
   {
+<<<<<<< HEAD
     "id": "estadia_para_familia",
     "nombre": "Estadía para Familia",
     "eslogan": "Todo lo bueno se pasa en familia ",
@@ -71,6 +172,8 @@
     ]
   },
   {
+=======
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
     "id": "estadia_para_parejas",
     "nombre": "Estadia para parejas",
     "eslogan": "Pasala bien en domo Natura premium",
@@ -106,6 +209,7 @@
     ]
   },
   {
+<<<<<<< HEAD
     "id": "pasa_dia_en_pareja_domo_natura_premium",
     "nombre": "Pasa día en pareja DOMO NATURA PREMIUM",
     "eslogan": "Dia perfecto en pareja ",
@@ -113,11 +217,21 @@
     "tipo": "pasa_dia",
     "icono": "Flame",
     "color": "#eae434",
+=======
+    "id": "estadia_para_familia",
+    "nombre": "Estadía para Familia",
+    "eslogan": "Todo lo bueno se pasa en familia ",
+    "descripcion": "",
+    "tipo": "normal",
+    "icono": "Gift",
+    "color": "#8c2b69",
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
     "estado": true,
     "preventa": false,
     "fechaInicio": null,
     "fechaFin": null,
     "precios": {
+<<<<<<< HEAD
       "entre_semana": 200000,
       "viernes_domingo": 300000,
       "especial": 300000
@@ -125,11 +239,21 @@
     "incluye": [
       "🛌 Alojamiento para dos personas",
       "🍽️ Desayuno americano o pizza mediana",
+=======
+      "entre_semana": 290000,
+      "viernes_domingo": 320000,
+      "especial": 390000
+    },
+    "incluye": [
+      "🛌 Alojamiento para dos personas",
+      "🍽️ Desayuno americano para dos",
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
       "🛁 Jacuzzi climatizado y privado",
       "🚿 Baño privado",
       "❄️ Nevera mini en el domo",
       "🐑🦙 Mini granja en su hábitat",
       "🅿️ Parqueadero privado sin costo",
+<<<<<<< HEAD
       "🛜 Zona wifi en el restaurante"
     ],
     "createdAt": "2026-05-19T19:05:07.666Z",
@@ -200,6 +324,16 @@
       1,
       2,
       3
+=======
+      "🛜 Zona wifi en el restaurante",
+      "🕸️ Malla catamarán"
+    ],
+    "createdAt": "2026-05-19T19:36:05.444Z",
+    "updatedAt": "2026-05-20T02:17:45.366Z",
+    "precio": 0,
+    "campingIds": [
+      4
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
     ]
   }
 ]

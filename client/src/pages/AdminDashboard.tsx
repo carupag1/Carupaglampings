@@ -128,7 +128,13 @@ export default function AdminDashboard() {
       .catch(() => setLocation("/admin/login"));
 
     return () => {
+<<<<<<< HEAD
       // Cleanup: no-op — never auto-logout on unmount
+=======
+      if (wasAuthenticated) {
+        navigator.sendBeacon("/api/logout.php");
+      }
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
     };
   }, []);
 
@@ -252,6 +258,7 @@ export default function AdminDashboard() {
   ];
   const PASO_LABELS: Record<string, string> = { plan: "Plan", dates: "Fechas", addons: "Adicionales", guest: "Huésped", payment: "Pago" };
 
+<<<<<<< HEAD
   type AuditEntry = {
     id: number;
     ts: string;
@@ -275,6 +282,8 @@ export default function AdminDashboard() {
     setAuditLoading(false);
   };
 
+=======
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
   const [banners, setBanners] = useState<any[]>([]);
   const [isBannerModalOpen, setIsBannerModalOpen] = useState(false);
   const [editingBanner, setEditingBanner] = useState<any>(null);
@@ -350,7 +359,11 @@ export default function AdminDashboard() {
   const [adminUserFormError, setAdminUserFormError] = useState<string | null>(null);
   const [adminUserSaving, setAdminUserSaving] = useState(false);
 
+<<<<<<< HEAD
   const fetchAdminUsers = () => fetch("/api/admin-users", { credentials: "include" }).then(r => r.json()).then(d => { if (Array.isArray(d)) setAdminUsers(d); }).catch(() => {});
+=======
+  const fetchAdminUsers = () => fetch("/api/admin-users").then(r => r.json()).then(d => { if (Array.isArray(d)) setAdminUsers(d); }).catch(() => {});
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
 
   const handleSaveAdminUser = async () => {
     setAdminUserFormError(null);
@@ -362,7 +375,11 @@ export default function AdminDashboard() {
       const method = editingAdminUser ? "PUT" : "POST";
       const body: any = { email: adminUserForm.email, rol: adminUserForm.rol };
       if (adminUserForm.password) body.password = adminUserForm.password;
+<<<<<<< HEAD
       const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify(body) });
+=======
+      const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
       const data = await res.json();
       if (!res.ok) { setAdminUserFormError(data.error || "Error al guardar"); return; }
       toast({ title: editingAdminUser ? "Credencial actualizada" : "Credencial creada" });
@@ -374,7 +391,11 @@ export default function AdminDashboard() {
 
   const handleDeleteAdminUser = async (id: number) => {
     if (!confirm("¿Eliminar este usuario administrador?")) return;
+<<<<<<< HEAD
     const res = await fetch(`/api/admin-users/${id}`, { method: "DELETE", credentials: "include" });
+=======
+    const res = await fetch(`/api/admin-users/${id}`, { method: "DELETE" });
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
     const data = await res.json();
     if (res.ok) { toast({ title: "Usuario eliminado" }); fetchAdminUsers(); }
     else toast({ title: "Error", description: data.error, variant: "destructive" });
@@ -389,7 +410,11 @@ export default function AdminDashboard() {
   const [campingUploadProgress, setCampingUploadProgress] = useState(0);
   const [campingConverting, setCampingConverting] = useState(false);
 
+<<<<<<< HEAD
   const fetchAdminCampings = () => fetch("/api/campings", { credentials: "include" }).then(r => r.json()).then(d => { if (Array.isArray(d)) setAdminCampings(d); }).catch(() => {});
+=======
+  const fetchAdminCampings = () => fetch("/api/campings").then(r => r.json()).then(d => { if (Array.isArray(d)) setAdminCampings(d); }).catch(() => {});
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
 
   const openCampingModal = (c: AdminCamping) => {
     setEditingCamping(c);
@@ -402,7 +427,11 @@ export default function AdminDashboard() {
     setCampingSaving(true);
     try {
       const res = await fetch(`/api/campings/${editingCamping.id}`, {
+<<<<<<< HEAD
         method: "PUT", headers: { "Content-Type": "application/json" }, credentials: "include",
+=======
+        method: "PUT", headers: { "Content-Type": "application/json" },
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
         body: JSON.stringify({ name: campingForm.name, description: campingForm.description, features: campingForm.features, includes: campingForm.includes })
       });
       const data = await res.json();
@@ -456,12 +485,20 @@ export default function AdminDashboard() {
   };
 
   const handleDeleteCampingImage = async (campingId: number, imageUrl: string) => {
+<<<<<<< HEAD
     const res = await fetch(`/api/campings/${campingId}/image`, { method: "DELETE", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify({ imageUrl }) });
+=======
+    const res = await fetch(`/api/campings/${campingId}/image`, { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ imageUrl }) });
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
     if (res.ok) { toast({ title: "Foto eliminada" }); fetchAdminCampings(); if (editingCamping?.id === campingId) { setEditingCamping(prev => prev ? { ...prev, images: prev.images.filter(i => i !== imageUrl), image: prev.image === imageUrl ? prev.images.find(i => i !== imageUrl) || "" : prev.image } : null); } }
   };
 
   const handleSetCoverImage = async (campingId: number, imageUrl: string) => {
+<<<<<<< HEAD
     const res = await fetch(`/api/campings/${campingId}/cover`, { method: "PATCH", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify({ imageUrl }) });
+=======
+    const res = await fetch(`/api/campings/${campingId}/cover`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ imageUrl }) });
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
     if (res.ok) { toast({ title: "Foto de portada actualizada" }); fetchAdminCampings(); setEditingCamping(prev => prev ? { ...prev, image: imageUrl } : null); }
     else toast({ title: "Error al actualizar portada", variant: "destructive" });
   };
@@ -478,24 +515,40 @@ export default function AdminDashboard() {
   const [addonFormError, setAddonFormError] = useState<string | null>(null);
   const [addonSaving, setAddonSaving] = useState(false);
 
+<<<<<<< HEAD
   const fetchAdminAddons = () => fetch("/api/addons", { credentials: "include" }).then(r => r.json()).then(d => { if (Array.isArray(d)) setAdminAddons(d); }).catch(() => {});
 
   const fetchBanners = async () => {
     try {
       const r = await fetch("/api/banners", { credentials: "include" });
+=======
+  const fetchAdminAddons = () => fetch("/api/addons").then(r => r.json()).then(d => { if (Array.isArray(d)) setAdminAddons(d); }).catch(() => {});
+
+  const fetchBanners = async () => {
+    try {
+      const r = await fetch("/api/banners");
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
       const data = await r.json();
       if (Array.isArray(data)) setBanners(data);
     } catch (e) { console.error("Error fetching banners:", e); }
   };
 
   const handleToggleBanner = async (id: string) => {
+<<<<<<< HEAD
     await fetch(`/api/banners/${id}/toggle`, { method: "PATCH", credentials: "include" });
+=======
+    await fetch(`/api/banners/${id}/toggle`, { method: "PATCH" });
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
     fetchBanners();
   };
 
   const handleDeleteBanner = async (id: string) => {
     if (!confirm("¿Eliminar este banner?")) return;
+<<<<<<< HEAD
     await fetch(`/api/banners/${id}`, { method: "DELETE", credentials: "include" });
+=======
+    await fetch(`/api/banners/${id}`, { method: "DELETE" });
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
     fetchBanners();
     toast({ title: "Banner eliminado" });
   };
@@ -533,7 +586,11 @@ export default function AdminDashboard() {
     if (!bannerForm.titulo && !bannerForm.texto) { setBannerFormError("El banner necesita al menos un título o mensaje"); return; }
     const method = editingBanner ? "PUT" : "POST";
     const url = editingBanner ? `/api/banners/${editingBanner.id}` : "/api/banners";
+<<<<<<< HEAD
     const r = await fetch(url, { method, headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify(bannerForm) });
+=======
+    const r = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(bannerForm) });
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
     const data = await r.json();
     if (data.success) {
       setIsBannerModalOpen(false);
@@ -559,7 +616,11 @@ export default function AdminDashboard() {
     try {
       const url = editingAddon ? `/api/addons/${editingAddon.id}` : "/api/addons";
       const method = editingAddon ? "PUT" : "POST";
+<<<<<<< HEAD
       const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify({ title: addonForm.title, price: addonForm.price, description: addonForm.description, details: addonForm.details, allowMultiple: addonForm.allowMultiple, maxQuantity: addonForm.allowMultiple ? addonForm.maxQuantity : 1, media: addonMedia }) });
+=======
+      const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title: addonForm.title, price: addonForm.price, description: addonForm.description, details: addonForm.details, allowMultiple: addonForm.allowMultiple, maxQuantity: addonForm.allowMultiple ? addonForm.maxQuantity : 1, media: addonMedia }) });
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
       const data = await res.json();
       if (res.ok) { toast({ title: editingAddon ? "Adicional actualizado" : "Adicional creado" }); setIsAddonModalOpen(false); fetchAdminAddons(); }
       else setAddonFormError(data.error || "Error al guardar");
@@ -618,7 +679,11 @@ export default function AdminDashboard() {
 
   const handleAddonMediaDelete = async (url: string) => {
     if (!editingAddon) return;
+<<<<<<< HEAD
     const res = await fetch(`/api/addons/${editingAddon.id}/media`, { method: "DELETE", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify({ url }) });
+=======
+    const res = await fetch(`/api/addons/${editingAddon.id}/media`, { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url }) });
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
     const data = await res.json();
     if (res.ok) { setAddonMedia(data.media); fetchAdminAddons(); }
     else toast({ title: "Error al eliminar", variant: "destructive" });
@@ -626,7 +691,11 @@ export default function AdminDashboard() {
 
   const handleDeleteAddon = async (id: string) => {
     if (!confirm("¿Eliminar este adicional?")) return;
+<<<<<<< HEAD
     const res = await fetch(`/api/addons/${id}`, { method: "DELETE", credentials: "include" });
+=======
+    const res = await fetch(`/api/addons/${id}`, { method: "DELETE" });
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
     if (res.ok) { toast({ title: "Adicional eliminado" }); fetchAdminAddons(); }
     else toast({ title: "Error al eliminar", variant: "destructive" });
   };
@@ -718,7 +787,11 @@ export default function AdminDashboard() {
     fetchReservas();
     fetchPlanBlocks();
     fetchDynamicPlans();
+<<<<<<< HEAD
     fetch("/api/pricing", { credentials: "include" })
+=======
+    fetch("/api/pricing")
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
       .then(r => r.json())
       .then(data => {
         if (data && data.tarifas) {
@@ -734,7 +807,11 @@ export default function AdminDashboard() {
         }
       })
       .catch(err => console.error("Error fetching pricing:", err));
+<<<<<<< HEAD
     fetch("/api/unit-blocks", { credentials: "include" })
+=======
+    fetch("/api/unit-blocks")
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
       .then(r => r.json())
       .then(data => { if (Array.isArray(data)) setUnitBlocks(data); })
       .catch(err => console.error("Error fetching unit blocks:", err));
@@ -746,7 +823,11 @@ export default function AdminDashboard() {
   
   const fetchPlanBlocks = async () => {
     try {
+<<<<<<< HEAD
       const response = await fetch("/api/plan-blocks", { credentials: "include" });
+=======
+      const response = await fetch("/api/plan-blocks");
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
       if (response.ok) {
         const data = await response.json();
         setPlanBlocks(data);
@@ -774,7 +855,10 @@ export default function AdminDashboard() {
       const response = await fetch("/api/plan-blocks", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+<<<<<<< HEAD
         credentials: "include",
+=======
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
         body: JSON.stringify(normalizedForm)
       });
       
@@ -795,7 +879,11 @@ export default function AdminDashboard() {
 
   const handleDeletePlanBlock = async (id: string) => {
     try {
+<<<<<<< HEAD
       const response = await fetch(`/api/plan-blocks/${id}`, { method: "DELETE", credentials: "include" });
+=======
+      const response = await fetch(`/api/plan-blocks/${id}`, { method: "DELETE" });
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
       const data = await response.json();
       
       if (data.success) {
@@ -811,7 +899,11 @@ export default function AdminDashboard() {
 
   const fetchUnitBlocks = async () => {
     try {
+<<<<<<< HEAD
       const response = await fetch("/api/unit-blocks", { credentials: "include" });
+=======
+      const response = await fetch("/api/unit-blocks");
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
       if (response.ok) {
         const data = await response.json();
         setUnitBlocks(data);
@@ -831,7 +923,10 @@ export default function AdminDashboard() {
       const response = await fetch("/api/unit-blocks", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+<<<<<<< HEAD
         credentials: "include",
+=======
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
         body: JSON.stringify({
           unitName: unitBlockForm.unitName,
           motivo: unitBlockForm.motivo || "Inhabilitada",
@@ -855,7 +950,11 @@ export default function AdminDashboard() {
 
   const handleDeleteUnitBlock = async (id: string) => {
     try {
+<<<<<<< HEAD
       const response = await fetch(`/api/unit-blocks/${id}`, { method: "DELETE", credentials: "include" });
+=======
+      const response = await fetch(`/api/unit-blocks/${id}`, { method: "DELETE" });
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
       const data = await response.json();
       if (data.success) {
         toast({ title: "Éxito", description: "Bloqueo de unidad eliminado" });
@@ -895,7 +994,11 @@ export default function AdminDashboard() {
 
   const fetchDynamicPlans = async () => {
     try {
+<<<<<<< HEAD
       const response = await fetch("/api/plans", { credentials: "include" });
+=======
+      const response = await fetch("/api/plans");
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
       if (response.ok) {
         const data = await response.json();
         setDynamicPlans(data);
@@ -931,7 +1034,10 @@ export default function AdminDashboard() {
       await fetch("/api/plans/reorder", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
+<<<<<<< HEAD
         credentials: "include",
+=======
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
         body: JSON.stringify({ order: reordered.map(p => p.id) })
       });
     } catch (error) {
@@ -1038,7 +1144,10 @@ export default function AdminDashboard() {
       const response = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
+<<<<<<< HEAD
         credentials: "include",
+=======
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
         body: JSON.stringify(payload)
       });
       
@@ -1062,7 +1171,10 @@ export default function AdminDashboard() {
       const response = await fetch(`/api/plans/${planId}/toggle`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
+<<<<<<< HEAD
         credentials: "include",
+=======
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
         body: JSON.stringify({ desactivarOtros })
       });
       
@@ -1085,7 +1197,11 @@ export default function AdminDashboard() {
     }
 
     try {
+<<<<<<< HEAD
       const response = await fetch(`/api/plans/${planId}`, { method: "DELETE", credentials: "include" });
+=======
+      const response = await fetch(`/api/plans/${planId}`, { method: "DELETE" });
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
       const data = await response.json();
       
       if (data.success) {
@@ -1124,7 +1240,10 @@ export default function AdminDashboard() {
     setLoading(true);
     try {
       const response = await fetch("/api/listar-reservas.php", {
+<<<<<<< HEAD
         credentials: "include",
+=======
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
         headers: {
           'Cache-Control': 'no-cache',
           'Pragma': 'no-cache'
@@ -1164,7 +1283,10 @@ export default function AdminDashboard() {
       const response = await fetch("/api/crear-reserva-manual.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+<<<<<<< HEAD
         credentials: "include",
+=======
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
         body: JSON.stringify(normalizedData)
       });
       const data = await response.json();
@@ -1332,7 +1454,10 @@ export default function AdminDashboard() {
         headers: {
           "Content-Type": "application/json"
         },
+<<<<<<< HEAD
         credentials: "include",
+=======
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
         body: JSON.stringify(normalizedPayload)
       });
       const data = await response.json();
@@ -1360,7 +1485,10 @@ export default function AdminDashboard() {
       const response = await fetch("/api/bulk-actions.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+<<<<<<< HEAD
         credentials: "include",
+=======
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
         body: JSON.stringify({ action, referencias })
       });
       const data = await response.json();
@@ -1395,7 +1523,11 @@ export default function AdminDashboard() {
 
   const handleLogout = async () => {
     try {
+<<<<<<< HEAD
       await fetch("/api/logout.php", { method: "POST", credentials: "include" });
+=======
+      await fetch("/api/logout.php", { method: "POST" });
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
       setLocation("/admin/login");
     } catch (error) {
       setLocation("/admin/login");
@@ -1453,7 +1585,10 @@ export default function AdminDashboard() {
               <TabsTrigger value="adicionales" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm text-xs">Adicionales</TabsTrigger>
               <TabsTrigger value="credenciales" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm text-xs">Credenciales</TabsTrigger>
               <TabsTrigger value="banners" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm text-xs">Banners</TabsTrigger>
+<<<<<<< HEAD
               <TabsTrigger value="actividad" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm text-xs" onClick={() => fetchAuditLog(auditFilter)}>Actividad</TabsTrigger>
+=======
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
             </TabsList>
           )}
 
@@ -1844,7 +1979,10 @@ export default function AdminDashboard() {
                       const res = await fetch("/api/pricing", {
                         method: "PUT",
                         headers: { "Content-Type": "application/json" },
+<<<<<<< HEAD
                         credentials: "include",
+=======
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
                         body: JSON.stringify(payload)
                       });
                       if (res.ok) {
@@ -2643,6 +2781,7 @@ export default function AdminDashboard() {
             )}
           </TabsContent>
 
+<<<<<<< HEAD
           <TabsContent value="actividad">
             <div className="bg-white rounded-3xl shadow-sm border border-stone-200 p-6">
               <div className="flex items-center justify-between mb-6">
@@ -2715,6 +2854,8 @@ export default function AdminDashboard() {
             </div>
           </TabsContent>
 
+=======
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
         </>
       ) : (
         <div className="bg-white rounded-3xl shadow-sm border border-stone-200 p-6 overflow-hidden">

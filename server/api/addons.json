@@ -2,7 +2,11 @@
   {
     "id": "decoracion",
     "title": "Decoración especial",
+<<<<<<< HEAD
     "price": 90000,
+=======
+    "price": 80000,
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
     "description": "Para cumpleaños, aniversario, pedida de noviazgo, noche de bodas o romántica.",
     "details": [
       "Flores y detalles decorativos",

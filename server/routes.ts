@@ -7,6 +7,7 @@ import fs from "fs";
 import multer from "multer";
 import pg from "pg";
 import { spawn } from "child_process";
+<<<<<<< HEAD
 import sharp from "sharp";
 import ffmpegPath from "ffmpeg-static";
 import convert from "heic-convert";
@@ -15,6 +16,13 @@ async function transcodeToH264(inputPath: string, explicitOutputPath?: string): 
   const dir = path.dirname(inputPath);
   const base = path.basename(inputPath, path.extname(inputPath));
   const outputPath = explicitOutputPath || path.join(dir, `${base}.mp4`);
+=======
+
+async function transcodeToH264(inputPath: string): Promise<string> {
+  const dir = path.dirname(inputPath);
+  const base = path.basename(inputPath, path.extname(inputPath));
+  const outputPath = path.join(dir, `${base}.mp4`);
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
 
   return new Promise((resolve, reject) => {
     const args = [
@@ -27,7 +35,11 @@ async function transcodeToH264(inputPath: string, explicitOutputPath?: string): 
       "-y",
       outputPath
     ];
+<<<<<<< HEAD
     const proc = spawn(ffmpegPath || "ffmpeg", args);
+=======
+    const proc = spawn("ffmpeg", args);
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
     proc.on("close", (code) => {
       if (code === 0) {
         if (inputPath !== outputPath && fs.existsSync(inputPath)) {
@@ -42,6 +54,7 @@ async function transcodeToH264(inputPath: string, explicitOutputPath?: string): 
   });
 }
 
+<<<<<<< HEAD
 const HEIC_EXTS = new Set([".heic", ".heif"]);
 
 async function convertImageToJpeg(inputPath: string): Promise<string> {
@@ -89,6 +102,8 @@ function isMediaFile(file: { mimetype: string; originalname: string }): boolean 
     file.mimetype.startsWith("image/") || file.mimetype.startsWith("video/");
 }
 
+=======
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
 const { Pool } = pg;
 
 // PostgreSQL connection pool
@@ -96,6 +111,7 @@ const pool = new Pool({
   connectionString: process.env.DATABASE_URL
 });
 
+<<<<<<< HEAD
 const dataCache: Record<string, any> = {};
 
 function readData(key: string): any {
@@ -151,6 +167,8 @@ async function initDataCache(): Promise<void> {
   console.log('[data] Cache loaded from PostgreSQL');
 }
 
+=======
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
 const uploadStorage = multer.diskStorage({
   destination: (req, file, cb) => {
     const uploadDir = path.join(process.cwd(), "public", "uploads");
@@ -202,6 +220,7 @@ async function ensurePostgresSchema() {
         comprobante TEXT
       )
     `);
+<<<<<<< HEAD
     await pool.query(`
       CREATE TABLE IF NOT EXISTS app_data (
         key TEXT PRIMARY KEY,
@@ -219,6 +238,8 @@ async function ensurePostgresSchema() {
         description TEXT
       )
     `);
+=======
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
     console.log("PostgreSQL schema verified");
   } catch (error) {
     console.error("Error ensuring PostgreSQL schema:", error);
@@ -230,7 +251,10 @@ export async function registerRoutes(
   app: Express
 ): Promise<Server> {
   await ensurePostgresSchema();
+<<<<<<< HEAD
   await initDataCache();
+=======
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
 
   app.get("/api/listar-reservas.php", async (req, res) => {
     try {
@@ -719,8 +743,31 @@ export async function registerRoutes(
   });
 
   // ============ Plan Blocks API ============
+<<<<<<< HEAD
   const readPlanBlocks = (): any[] => (readData('plan-blocks') as any[]) || [];
   const writePlanBlocks = (blocks: any[]) => writeData('plan-blocks', blocks);
+=======
+  const planBlocksFile = path.join(process.cwd(), "server", "api", "plan-blocks.json");
+
+  const ensurePlanBlocksFile = () => {
+    if (!fs.existsSync(planBlocksFile)) {
+      fs.writeFileSync(planBlocksFile, JSON.stringify([], null, 2));
+    }
+  };
+
+  const readPlanBlocks = (): any[] => {
+    ensurePlanBlocksFile();
+    try {
+      return JSON.parse(fs.readFileSync(planBlocksFile, "utf-8"));
+    } catch {
+      return [];
+    }
+  };
+
+  const writePlanBlocks = (blocks: any[]) => {
+    fs.writeFileSync(planBlocksFile, JSON.stringify(blocks, null, 2));
+  };
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
 
   app.get("/api/plan-blocks", (req, res) => {
     try {
@@ -785,7 +832,11 @@ export async function registerRoutes(
 
       blocks.push(newBlock);
       writePlanBlocks(blocks);
+<<<<<<< HEAD
       logAudit('CREATE', 'plan-block', newBlock.id, `Bloqueó fechas ${normalizedStart?.substring(0,10)} – ${normalizedEnd?.substring(0,10)} para plan "${planId}"`);
+=======
+
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
       res.json({ success: true, block: newBlock });
     } catch (error: any) {
       res.status(500).json({ success: false, error: error.message });
@@ -812,8 +863,27 @@ export async function registerRoutes(
   });
 
   // ============ Unit Blocks API ============
+<<<<<<< HEAD
   const readUnitBlocks = (): any[] => (readData('unit-blocks') as any[]) || [];
   const writeUnitBlocks = (blocks: any[]) => writeData('unit-blocks', blocks);
+=======
+  const unitBlocksFile = path.join(process.cwd(), "server", "api", "unit-blocks.json");
+
+  const readUnitBlocks = (): any[] => {
+    try {
+      if (!fs.existsSync(unitBlocksFile)) {
+        fs.writeFileSync(unitBlocksFile, JSON.stringify([], null, 2));
+      }
+      return JSON.parse(fs.readFileSync(unitBlocksFile, "utf-8"));
+    } catch {
+      return [];
+    }
+  };
+
+  const writeUnitBlocks = (blocks: any[]) => {
+    fs.writeFileSync(unitBlocksFile, JSON.stringify(blocks, null, 2));
+  };
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
 
   app.get("/api/unit-blocks", (req, res) => {
     try {
@@ -863,7 +933,11 @@ export async function registerRoutes(
 
       blocks.push(newBlock);
       writeUnitBlocks(blocks);
+<<<<<<< HEAD
       logAudit('CREATE', 'unit-block', newBlock.id, `Bloqueó fechas de la unidad "${unitName}"${motivo ? ': ' + motivo : ''}`);
+=======
+
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
       res.json({ success: true, block: newBlock });
     } catch (error: any) {
       res.status(500).json({ success: false, error: error.message });
@@ -889,8 +963,23 @@ export async function registerRoutes(
   });
 
   // ============ Banners API ============
+<<<<<<< HEAD
   const readBanners = (): any[] => (readData('banners') as any[]) || [];
   const writeBanners = (banners: any[]) => writeData('banners', banners);
+=======
+  const bannersFile = path.join(process.cwd(), "server", "api", "banners.json");
+
+  const readBanners = (): any[] => {
+    try {
+      if (!fs.existsSync(bannersFile)) fs.writeFileSync(bannersFile, JSON.stringify([], null, 2));
+      return JSON.parse(fs.readFileSync(bannersFile, "utf-8"));
+    } catch { return []; }
+  };
+
+  const writeBanners = (banners: any[]) => {
+    fs.writeFileSync(bannersFile, JSON.stringify(banners, null, 2));
+  };
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
 
   const bannerUploadStorage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -908,7 +997,11 @@ export async function registerRoutes(
     storage: bannerUploadStorage,
     limits: { fileSize: 100 * 1024 * 1024 },
     fileFilter: (req, file, cb) => {
+<<<<<<< HEAD
       if (isMediaFile(file)) cb(null, true);
+=======
+      if (file.mimetype.startsWith("image/") || file.mimetype.startsWith("video/")) cb(null, true);
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
       else cb(new Error("Solo se permiten imágenes o videos"));
     }
   });
@@ -924,11 +1017,16 @@ export async function registerRoutes(
   app.post("/api/banners/upload-image", uploadBannerImage.single("image"), async (req: any, res) => {
     try {
       if (!req.file) return res.status(400).json({ error: "No se recibió archivo" });
+<<<<<<< HEAD
       if (isVideoFile(req.file)) {
+=======
+      if (req.file.mimetype.startsWith("video/")) {
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
         const inputPath = req.file.path;
         const outputFilename = req.file.filename.replace(/\.[^.]+$/, "") + "_h264.mp4";
         const outputPath = path.join(path.dirname(inputPath), outputFilename);
         await transcodeToH264(inputPath, outputPath);
+<<<<<<< HEAD
         if (fs.existsSync(inputPath)) fs.unlinkSync(inputPath);
         res.json({ url: `/images/banners/${outputFilename}`, type: "video" });
       } else {
@@ -939,6 +1037,12 @@ export async function registerRoutes(
           filename = path.basename(outputPath);
         }
         res.json({ url: `/images/banners/${filename}`, type: "image" });
+=======
+        fs.unlinkSync(inputPath);
+        res.json({ url: `/images/banners/${outputFilename}`, type: "video" });
+      } else {
+        res.json({ url: `/images/banners/${req.file.filename}`, type: "image" });
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
       }
     } catch (e: any) { res.status(500).json({ error: e.message }); }
   });
@@ -963,7 +1067,10 @@ export async function registerRoutes(
       };
       banners.push(newBanner);
       writeBanners(banners);
+<<<<<<< HEAD
       logAudit('CREATE', 'banner', newBanner.id, `Creó banner "${newBanner.titulo || newBanner.texto?.substring(0, 40)}"`);
+=======
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
       res.json({ success: true, banner: newBanner });
     } catch (e: any) { res.status(500).json({ error: e.message }); }
   });
@@ -976,7 +1083,10 @@ export async function registerRoutes(
       if (idx === -1) return res.status(404).json({ error: "Banner no encontrado" });
       banners[idx] = { ...banners[idx], ...req.body, id };
       writeBanners(banners);
+<<<<<<< HEAD
       logAudit('UPDATE', 'banner', id, `Actualizó banner "${banners[idx].titulo}"`);
+=======
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
       res.json({ success: true, banner: banners[idx] });
     } catch (e: any) { res.status(500).json({ error: e.message }); }
   });
@@ -989,7 +1099,10 @@ export async function registerRoutes(
       if (idx === -1) return res.status(404).json({ error: "Banner no encontrado" });
       banners[idx].activo = !banners[idx].activo;
       writeBanners(banners);
+<<<<<<< HEAD
       logAudit('UPDATE', 'banner', id, `${banners[idx].activo ? 'Activó' : 'Desactivó'} banner "${banners[idx].titulo}"`);
+=======
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
       res.json({ success: true, banner: banners[idx] });
     } catch (e: any) { res.status(500).json({ error: e.message }); }
   });
@@ -999,18 +1112,43 @@ export async function registerRoutes(
       const { id } = req.params;
       let banners = readBanners();
       const initial = banners.length;
+<<<<<<< HEAD
       const deleted = banners.find((b: any) => b.id === id);
       banners = banners.filter((b: any) => b.id !== id);
       if (banners.length === initial) return res.status(404).json({ error: "Banner no encontrado" });
       writeBanners(banners);
       logAudit('DELETE', 'banner', id, `Eliminó banner "${deleted?.titulo || id}"`);
+=======
+      banners = banners.filter((b: any) => b.id !== id);
+      if (banners.length === initial) return res.status(404).json({ error: "Banner no encontrado" });
+      writeBanners(banners);
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
       res.json({ success: true });
     } catch (e: any) { res.status(500).json({ error: e.message }); }
   });
 
   // ============ Dynamic Plans API ============
+<<<<<<< HEAD
   const readPlans = (): any[] => (readData('plans') as any[]) || [];
   const writePlans = (plans: any[]) => writeData('plans', plans);
+=======
+  const plansFile = path.join(process.cwd(), "server", "api", "plans.json");
+
+  const readPlans = (): any[] => {
+    try {
+      if (!fs.existsSync(plansFile)) {
+        return [];
+      }
+      return JSON.parse(fs.readFileSync(plansFile, "utf-8"));
+    } catch {
+      return [];
+    }
+  };
+
+  const writePlans = (plans: any[]) => {
+    fs.writeFileSync(plansFile, JSON.stringify(plans, null, 2));
+  };
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
 
   app.get("/api/plans", (req, res) => {
     try {
@@ -1112,7 +1250,11 @@ export async function registerRoutes(
 
       plans.push(newPlan);
       writePlans(plans);
+<<<<<<< HEAD
       logAudit('CREATE', 'plan', newPlan.id, `Creó plan "${nombre}"`);
+=======
+
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
       res.json({ success: true, plan: newPlan });
     } catch (error: any) {
       res.status(500).json({ success: false, error: error.message });
@@ -1179,7 +1321,11 @@ export async function registerRoutes(
 
       plans[planIndex] = updatedPlan;
       writePlans(plans);
+<<<<<<< HEAD
       logAudit('UPDATE', 'plan', id, `Actualizó plan "${updatedPlan.nombre}"`);
+=======
+
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
       res.json({ success: true, plan: updatedPlan });
     } catch (error: any) {
       res.status(500).json({ success: false, error: error.message });
@@ -1208,7 +1354,11 @@ export async function registerRoutes(
 
       plans[planIndex].estado = newState;
       writePlans(plans);
+<<<<<<< HEAD
       logAudit('UPDATE', 'plan', id, `${newState ? 'Activó' : 'Desactivó'} plan "${plans[planIndex].nombre}"`);
+=======
+
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
       res.json({ success: true, plan: plans[planIndex] });
     } catch (error: any) {
       res.status(500).json({ success: false, error: error.message });
@@ -1312,8 +1462,19 @@ export async function registerRoutes(
   });
 
   // ============ Addons CRUD ============
+<<<<<<< HEAD
   const readAddons = (): any[] => (readData('addons') as any[]) || [];
   const writeAddons = (data: any[]) => writeData('addons', data);
+=======
+  const addonsFilePath = path.join(process.cwd(), "server", "api", "addons.json");
+
+  const readAddons = (): any[] => {
+    try {
+      return JSON.parse(fs.readFileSync(addonsFilePath, "utf-8"));
+    } catch { return []; }
+  };
+  const writeAddons = (data: any[]) => fs.writeFileSync(addonsFilePath, JSON.stringify(data, null, 2));
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
 
   const addonMediaStorage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -1330,7 +1491,11 @@ export async function registerRoutes(
     storage: addonMediaStorage,
     limits: { fileSize: 100 * 1024 * 1024 },
     fileFilter: (req, file, cb) => {
+<<<<<<< HEAD
       if (isMediaFile(file)) cb(null, true);
+=======
+      if (file.mimetype.startsWith("image/") || file.mimetype.startsWith("video/")) cb(null, true);
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
       else cb(new Error("Solo se permiten imágenes y videos"));
     }
   });
@@ -1354,7 +1519,10 @@ export async function registerRoutes(
       };
       addons.push(newAddon);
       writeAddons(addons);
+<<<<<<< HEAD
       logAudit('CREATE', 'addon', newAddon.id, `Creó adicional "${title}"`);
+=======
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
       res.json({ success: true, addon: newAddon });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
@@ -1379,7 +1547,10 @@ export async function registerRoutes(
         media: media ?? addons[idx].media ?? []
       };
       writeAddons(addons);
+<<<<<<< HEAD
       logAudit('UPDATE', 'addon', id, `Actualizó adicional "${addons[idx].title}"`);
+=======
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
       res.json({ success: true, addon: addons[idx] });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
@@ -1396,12 +1567,17 @@ export async function registerRoutes(
       if (idx === -1) return res.status(404).json({ error: "Adicional no encontrado" });
       if (!addons[idx].media) addons[idx].media = [];
       for (const file of files) {
+<<<<<<< HEAD
         const isVideo = isVideoFile(file);
+=======
+        const isVideo = file.mimetype.startsWith("video/");
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
         let filename = file.filename;
         if (isVideo) {
           const inputPath = path.join(process.cwd(), "public", "images", "addons", file.filename);
           const outputPath = await transcodeToH264(inputPath);
           filename = path.basename(outputPath);
+<<<<<<< HEAD
         } else {
           const ext = path.extname(file.filename).toLowerCase();
           if (ext !== ".jpg" && ext !== ".jpeg") {
@@ -1409,6 +1585,8 @@ export async function registerRoutes(
             const outputPath = await convertImageToJpeg(inputPath);
             filename = path.basename(outputPath);
           }
+=======
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
         }
         const url = `/images/addons/${filename}`;
         addons[idx].media.push({ type: isVideo ? "video" : "image", url });
@@ -1447,8 +1625,19 @@ export async function registerRoutes(
   });
 
   // ============ Campings CRUD ============
+<<<<<<< HEAD
   const readCampings = (): any[] => (readData('campings') as any[]) || [];
   const writeCampings = (data: any[]) => writeData('campings', data);
+=======
+  const campingsFilePath = path.join(process.cwd(), "server", "api", "campings.json");
+
+  const readCampings = (): any[] => {
+    try {
+      return JSON.parse(fs.readFileSync(campingsFilePath, "utf-8"));
+    } catch { return []; }
+  };
+  const writeCampings = (data: any[]) => fs.writeFileSync(campingsFilePath, JSON.stringify(data, null, 2));
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
 
   app.get("/api/campings", (req, res) => res.json(readCampings()));
 
@@ -1469,7 +1658,10 @@ export async function registerRoutes(
         ...(image !== undefined && { image })
       };
       writeCampings(campings);
+<<<<<<< HEAD
       logAudit('UPDATE', 'camping', id, `Actualizó glamping "${campings[idx].name}"`);
+=======
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
       res.json({ success: true, camping: campings[idx] });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
@@ -1491,7 +1683,11 @@ export async function registerRoutes(
     storage: campingImageStorage,
     limits: { fileSize: 100 * 1024 * 1024 },
     fileFilter: (req, file, cb) => {
+<<<<<<< HEAD
       if (isMediaFile(file)) cb(null, true);
+=======
+      if (file.mimetype.startsWith("image/") || file.mimetype.startsWith("video/")) cb(null, true);
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
       else cb(new Error("Solo se permiten imágenes y videos"));
     }
   });
@@ -1501,6 +1697,7 @@ export async function registerRoutes(
       const { id } = req.params;
       if (!req.file) return res.status(400).json({ error: "No se recibió archivo" });
       let filename = req.file.filename;
+<<<<<<< HEAD
       if (isVideoFile(req.file)) {
         const inputPath = path.join(process.cwd(), "public", "images", "campings", req.file.filename);
         const outputPath = await transcodeToH264(inputPath);
@@ -1512,6 +1709,12 @@ export async function registerRoutes(
           const outputPath = await convertImageToJpeg(inputPath);
           filename = path.basename(outputPath);
         }
+=======
+      if (req.file.mimetype.startsWith("video/")) {
+        const inputPath = path.join(process.cwd(), "public", "images", "campings", req.file.filename);
+        const outputPath = await transcodeToH264(inputPath);
+        filename = path.basename(outputPath);
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
       }
       const imageUrl = `/images/campings/${filename}`;
       const campings = readCampings();
@@ -1521,7 +1724,10 @@ export async function registerRoutes(
       campings[idx].images = images;
       campings[idx].image = images[0];
       writeCampings(campings);
+<<<<<<< HEAD
       logAudit('UPLOAD', 'camping', id, `Subió ${isVideoFile(req.file!) ? 'video' : 'imagen'} al glamping "${campings[idx].name}"`);
+=======
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
       res.json({ success: true, imageUrl, camping: campings[idx] });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
@@ -1539,7 +1745,10 @@ export async function registerRoutes(
       if (campings[idx].images.length === 0) campings[idx].images = ["/images/glamping-placeholder.svg"];
       if (campings[idx].image === imageUrl) campings[idx].image = campings[idx].images[0];
       writeCampings(campings);
+<<<<<<< HEAD
       logAudit('DELETE', 'camping', id, `Eliminó imagen del glamping "${campings[idx].name}"`);
+=======
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
       res.json({ success: true, camping: campings[idx] });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
@@ -1556,16 +1765,28 @@ export async function registerRoutes(
       if (idx === -1) return res.status(404).json({ error: "Glamping no encontrado" });
       campings[idx].image = imageUrl;
       writeCampings(campings);
+<<<<<<< HEAD
       logAudit('UPDATE', 'camping', id, `Cambió portada del glamping "${campings[idx].name}"`);
+=======
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
       res.json({ success: true, camping: campings[idx] });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   });
 
+<<<<<<< HEAD
   app.get("/api/pricing", (req, res) => {
     try {
       res.json(readData('pricing') || {});
+=======
+  const PRICING_PATH = path.join(process.cwd(), "server/api/pricing.json");
+
+  app.get("/api/pricing", (req, res) => {
+    try {
+      const data = fs.readFileSync(PRICING_PATH, "utf-8");
+      res.json(JSON.parse(data));
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
     } catch (error: any) {
       res.status(500).json({ error: "Error leyendo configuración de precios" });
     }
@@ -1573,14 +1794,19 @@ export async function registerRoutes(
 
   app.put("/api/pricing", (req, res) => {
     try {
+<<<<<<< HEAD
       writeData('pricing', req.body);
       logAudit('UPDATE', 'pricing', null, 'Actualizó tarifas y configuración de precios');
+=======
+      fs.writeFileSync(PRICING_PATH, JSON.stringify(req.body, null, 2));
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
       res.json({ success: true });
     } catch (error: any) {
       res.status(500).json({ success: false, error: error.message });
     }
   });
 
+<<<<<<< HEAD
   app.get("/api/audit-log", async (req: any, res) => {
     try {
       const limit = Math.min(parseInt(req.query.limit as string) || 200, 500);
@@ -1600,5 +1826,7 @@ export async function registerRoutes(
     }
   });
 
+=======
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
   return httpServer;
 }

@@ -35,8 +35,11 @@ async function ensureAdminTable() {
 export function setupAuth(app: Express) {
   ensureAdminTable().catch(console.error);
 
+<<<<<<< HEAD
   app.set("trust proxy", 1);
 
+=======
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
   const sessionStore = new PgSession({
     pool,
     tableName: "user_sessions",
@@ -52,8 +55,11 @@ export function setupAuth(app: Express) {
       cookie: {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
+<<<<<<< HEAD
         sameSite: "lax",
         maxAge: 1000 * 60 * 60 * 24 * 7,
+=======
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
       },
     })
   );

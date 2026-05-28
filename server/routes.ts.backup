@@ -7,176 +7,87 @@ import fs from "fs";
 import multer from "multer";
 import pg from "pg";
 import { spawn } from "child_process";
+<<<<<<< HEAD
 import sharp from "sharp";
 import ffmpegPath from "ffmpeg-static";
 import convert from "heic-convert";
 
-// ── Media processing concurrency guard ───────────────────────────────────────
-// Prevents two concurrent ffmpeg/sharp jobs from touching the same file.
-const processingLock = new Set<string>();
+async function transcodeToH264(inputPath: string, explicitOutputPath?: string): Promise<string> {
+  const dir = path.dirname(inputPath);
+  const base = path.basename(inputPath, path.extname(inputPath));
+  const outputPath = explicitOutputPath || path.join(dir, `${base}.mp4`);
+=======
 
-/**
- * Transcode a video to H.264 MP4.
- *
- * Safety guarantees:
- *  - The original `inputPath` is NEVER deleted or overwritten.
- *  - Output is always written to a `.tmp` file first, then atomically renamed.
- *  - Output filename always carries `_h264` suffix so it can never equal the input.
- *  - Concurrent calls for the same inputPath are rejected immediately.
- */
+async function transcodeToH264(inputPath: string): Promise<string> {
+  const dir = path.dirname(inputPath);
+  const base = path.basename(inputPath, path.extname(inputPath));
+  const outputPath = path.join(dir, `${base}.mp4`);
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
 
-/**
- * Validates a video file with ffprobe before attempting transcoding.
- * Throws a user-friendly Spanish error if the file is unreadable/incomplete.
- */
-async function validateVideoInput(inputPath: string): Promise<void> {
-  await new Promise<void>((resolve, reject) => {
-    const probe = spawn("ffprobe", [
-      "-v", "error",
-      "-select_streams", "v:0",
-      "-show_entries", "stream=codec_name",
-      "-of", "default=noprint_wrappers=1",
-      inputPath,
-    ]);
-    const errLines: string[] = [];
-    probe.stderr?.on("data", (d: Buffer) => errLines.push(d.toString()));
-    probe.on("close", (code) => {
+  return new Promise((resolve, reject) => {
+    const args = [
+      "-i", inputPath,
+      "-c:v", "libx264",
+      "-crf", "23",
+      "-preset", "fast",
+      "-c:a", "aac",
+      "-movflags", "+faststart",
+      "-y",
+      outputPath
+    ];
+<<<<<<< HEAD
+    const proc = spawn(ffmpegPath || "ffmpeg", args);
+=======
+    const proc = spawn("ffmpeg", args);
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
+    proc.on("close", (code) => {
       if (code === 0) {
-        resolve();
+        if (inputPath !== outputPath && fs.existsSync(inputPath)) {
+          fs.unlinkSync(inputPath);
+        }
+        resolve(outputPath);
       } else {
-        const detail = errLines.join("").trim().slice(0, 200);
-        console.error(`[media] ffprobe INVALID  src=${path.basename(inputPath)}  detail=${detail}`);
-        reject(new Error(
-          `El archivo de video está incompleto o dañado (puede ser una subida interrumpida). ` +
-          `Intenta subirlo de nuevo. Detalle: ${detail}`
-        ));
+        reject(new Error(`ffmpeg exited with code ${code}`));
       }
     });
-    probe.on("error", (e) => reject(new Error(`ffprobe no disponible: ${e.message}`)));
+    proc.on("error", reject);
   });
 }
 
-async function transcodeToH264(inputPath: string): Promise<string> {
-  if (processingLock.has(inputPath)) {
-    throw new Error(`[media] Concurrent processing rejected for: ${path.basename(inputPath)}`);
-  }
-  processingLock.add(inputPath);
-
-  const dir = path.dirname(inputPath);
-  const base = path.basename(inputPath, path.extname(inputPath));
-  const finalOutput = path.join(dir, `${base}_h264.mp4`);
-  const tmpOutput   = path.join(dir, `${base}_h264.tmp${Date.now()}.mp4`);
-
-  console.log(`[media] START transcode  src=${path.basename(inputPath)}  dst=${path.basename(finalOutput)}`);
-
-  try {
-    // Validate before calling ffmpeg — gives a clear error for truncated/corrupt uploads
-    await validateVideoInput(inputPath);
-
-    await new Promise<void>((resolve, reject) => {
-      const args = [
-        "-i", inputPath,
-        "-c:v", "libx264",
-        "-crf", "23",
-        "-preset", "fast",
-        "-c:a", "aac",
-        "-movflags", "+faststart",
-        "-y",
-        tmpOutput,
-      ];
-      const proc = spawn(ffmpegPath || "ffmpeg", args);
-      const stderr: string[] = [];
-      proc.stderr?.on("data", (d: Buffer) => stderr.push(d.toString()));
-      proc.on("close", (code) => {
-        if (code === 0) {
-          resolve();
-        } else {
-          // Include last 5 lines of stderr so logs always show WHY ffmpeg failed
-          const detail = stderr.slice(-5).join("").trim().slice(0, 400);
-          reject(new Error(`ffmpeg falló (código ${code}): ${detail}`));
-        }
-      });
-      proc.on("error", (e) => reject(new Error(`No se pudo iniciar ffmpeg: ${e.message}`)));
-    });
-
-    // Atomic rename: tmp → final (only after ffmpeg finishes cleanly)
-    fs.renameSync(tmpOutput, finalOutput);
-    console.log(`[media] OK  transcode  dst=${path.basename(finalOutput)}`);
-    return finalOutput;
-  } catch (err) {
-    // Clean up partial temp file on failure
-    try { if (fs.existsSync(tmpOutput)) fs.unlinkSync(tmpOutput); } catch {}
-    console.error(`[media] FAIL transcode  src=${path.basename(inputPath)}  err=${(err as Error).message}`);
-    throw err;
-  } finally {
-    processingLock.delete(inputPath);
-  }
-}
-
+<<<<<<< HEAD
 const HEIC_EXTS = new Set([".heic", ".heif"]);
 
-/**
- * Convert any image to a web-safe JPEG.
- *
- * Safety guarantees:
- *  - The original `inputPath` is NEVER deleted or overwritten.
- *  - Output is always written to a `.tmp` file first, then atomically renamed.
- *  - Output filename carries `_conv` suffix so it can never equal the input.
- *  - Concurrent calls for the same inputPath are rejected immediately.
- */
 async function convertImageToJpeg(inputPath: string): Promise<string> {
-  if (processingLock.has(inputPath)) {
-    throw new Error(`[media] Concurrent processing rejected for: ${path.basename(inputPath)}`);
-  }
-  processingLock.add(inputPath);
-
   const ext = path.extname(inputPath).toLowerCase();
   const dir = path.dirname(inputPath);
   const base = path.basename(inputPath, ext);
-  const finalOutput = path.join(dir, `${base}_conv.jpg`);
-  const tmpOutput   = path.join(dir, `${base}_conv.tmp${Date.now()}.jpg`);
+  const outputPath = path.join(dir, `${base}.jpg`);
 
-  console.log(`[media] START convert-image  src=${path.basename(inputPath)}  dst=${path.basename(finalOutput)}`);
-
-  try {
-    if (HEIC_EXTS.has(ext)) {
-      // sharp cannot decode HEIC — use heic-convert (pure JS)
-      const inputBuffer = fs.readFileSync(inputPath);
-      const jpegBuffer = await convert({
-        buffer: inputBuffer,
-        format: "JPEG",
-        quality: 0.85,
-      });
-      // Write to tmp, then rename atomically
-      fs.writeFileSync(tmpOutput, Buffer.from(jpegBuffer));
-    } else {
-      // Sharp writes directly to tmpOutput; that path is new so no read/write race
-      await sharp(inputPath)
-        .rotate()
-        .jpeg({ quality: 85, progressive: true })
-        .toFile(tmpOutput);
-    }
-
-    // Atomic rename
-    fs.renameSync(tmpOutput, finalOutput);
-    console.log(`[media] OK  convert-image  dst=${path.basename(finalOutput)}`);
-    return finalOutput;
-  } catch (err) {
-    try { if (fs.existsSync(tmpOutput)) fs.unlinkSync(tmpOutput); } catch {}
-    console.error(`[media] FAIL convert-image  src=${path.basename(inputPath)}  err=${(err as Error).message}`);
-    throw err;
-  } finally {
-    processingLock.delete(inputPath);
+  if (HEIC_EXTS.has(ext)) {
+    // sharp cannot decode HEIC without libheif — use heic-convert (pure JS)
+    const inputBuffer = fs.readFileSync(inputPath);
+    const jpegBuffer = await convert({
+      buffer: inputBuffer,
+      format: "JPEG",
+      quality: 0.85,
+    });
+    fs.writeFileSync(outputPath, Buffer.from(jpegBuffer));
+  } else {
+    await sharp(inputPath)
+      .rotate()
+      .jpeg({ quality: 85, progressive: true })
+      .toFile(outputPath);
   }
+
+  if (inputPath !== outputPath && fs.existsSync(inputPath)) {
+    fs.unlinkSync(inputPath);
+  }
+
+  return outputPath;
 }
 
 const VIDEO_EXTS = new Set([".mp4", ".mov", ".avi", ".mkv", ".webm", ".m4v", ".3gp"]);
 const IMAGE_EXTS = new Set([".jpg", ".jpeg", ".png", ".gif", ".webp", ".avif", ".tiff", ".tif", ".heic", ".heif", ".bmp"]);
-
-// Already web-safe — no ffmpeg needed
-const PASSTHROUGH_VIDEO_EXTS = new Set([".mp4"]);
-// Already web-safe — no sharp/heic-convert needed
-const PASSTHROUGH_IMAGE_EXTS = new Set([".jpg", ".jpeg", ".png", ".webp"]);
 
 function isVideoFile(file: { mimetype: string; originalname: string }): boolean {
   const ext = path.extname(file.originalname).toLowerCase();
@@ -191,48 +102,8 @@ function isMediaFile(file: { mimetype: string; originalname: string }): boolean 
     file.mimetype.startsWith("image/") || file.mimetype.startsWith("video/");
 }
 
-/**
- * Returns the path to serve for a video file.
- * - .mp4  → returns inputPath as-is (no ffmpeg).
- * - anything else (.mov, .avi, .mkv, …) → transcodes to H.264 MP4.
- *
- * Uses lowercase endsWith for robustness against mixed-case extensions (.MP4, .Mp4, etc.)
- */
-async function processVideoFile(inputPath: string): Promise<string> {
-  const lower = inputPath.toLowerCase();
-  const ext = path.extname(lower);                   // already lowercase
-  console.log(`[media] processVideoFile  path=${path.basename(inputPath)}  lower_ext=${ext}`);
-
-  if (lower.endsWith(".mp4")) {
-    console.log(`[media] SKIP transcode — already .mp4  src=${path.basename(inputPath)}`);
-    return inputPath;
-  }
-
-  console.log(`[media] WILL transcode  src=${path.basename(inputPath)}  reason=ext_is_${ext || "unknown"}`);
-  return transcodeToH264(inputPath);
-}
-
-/**
- * Returns the path to serve for an image file.
- * - .jpg / .jpeg / .png / .webp → returns inputPath as-is (no sharp).
- * - anything else (.heic, .heif, .avif, .tiff, .bmp, …) → converts to JPEG.
- *
- * Uses lowercase endsWith for robustness against mixed-case extensions.
- */
-async function processImageFile(inputPath: string): Promise<string> {
-  const lower = inputPath.toLowerCase();
-  const ext = path.extname(lower);
-  console.log(`[media] processImageFile  path=${path.basename(inputPath)}  lower_ext=${ext}`);
-
-  if (lower.endsWith(".jpg") || lower.endsWith(".jpeg") || lower.endsWith(".png") || lower.endsWith(".webp")) {
-    console.log(`[media] SKIP convert — already web-safe  src=${path.basename(inputPath)}`);
-    return inputPath;
-  }
-
-  console.log(`[media] WILL convert  src=${path.basename(inputPath)}  reason=ext_is_${ext || "unknown"}`);
-  return convertImageToJpeg(inputPath);
-}
-
+=======
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
 const { Pool } = pg;
 
 // PostgreSQL connection pool
@@ -240,6 +111,7 @@ const pool = new Pool({
   connectionString: process.env.DATABASE_URL
 });
 
+<<<<<<< HEAD
 const dataCache: Record<string, any> = {};
 
 function readData(key: string): any {
@@ -295,6 +167,8 @@ async function initDataCache(): Promise<void> {
   console.log('[data] Cache loaded from PostgreSQL');
 }
 
+=======
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
 const uploadStorage = multer.diskStorage({
   destination: (req, file, cb) => {
     const uploadDir = path.join(process.cwd(), "public", "uploads");
@@ -346,6 +220,7 @@ async function ensurePostgresSchema() {
         comprobante TEXT
       )
     `);
+<<<<<<< HEAD
     await pool.query(`
       CREATE TABLE IF NOT EXISTS app_data (
         key TEXT PRIMARY KEY,
@@ -363,6 +238,8 @@ async function ensurePostgresSchema() {
         description TEXT
       )
     `);
+=======
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
     console.log("PostgreSQL schema verified");
   } catch (error) {
     console.error("Error ensuring PostgreSQL schema:", error);
@@ -374,7 +251,10 @@ export async function registerRoutes(
   app: Express
 ): Promise<Server> {
   await ensurePostgresSchema();
+<<<<<<< HEAD
   await initDataCache();
+=======
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
 
   app.get("/api/listar-reservas.php", async (req, res) => {
     try {
@@ -863,8 +743,31 @@ export async function registerRoutes(
   });
 
   // ============ Plan Blocks API ============
+<<<<<<< HEAD
   const readPlanBlocks = (): any[] => (readData('plan-blocks') as any[]) || [];
   const writePlanBlocks = (blocks: any[]) => writeData('plan-blocks', blocks);
+=======
+  const planBlocksFile = path.join(process.cwd(), "server", "api", "plan-blocks.json");
+
+  const ensurePlanBlocksFile = () => {
+    if (!fs.existsSync(planBlocksFile)) {
+      fs.writeFileSync(planBlocksFile, JSON.stringify([], null, 2));
+    }
+  };
+
+  const readPlanBlocks = (): any[] => {
+    ensurePlanBlocksFile();
+    try {
+      return JSON.parse(fs.readFileSync(planBlocksFile, "utf-8"));
+    } catch {
+      return [];
+    }
+  };
+
+  const writePlanBlocks = (blocks: any[]) => {
+    fs.writeFileSync(planBlocksFile, JSON.stringify(blocks, null, 2));
+  };
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
 
   app.get("/api/plan-blocks", (req, res) => {
     try {
@@ -929,7 +832,11 @@ export async function registerRoutes(
 
       blocks.push(newBlock);
       writePlanBlocks(blocks);
+<<<<<<< HEAD
       logAudit('CREATE', 'plan-block', newBlock.id, `Bloqueó fechas ${normalizedStart?.substring(0,10)} – ${normalizedEnd?.substring(0,10)} para plan "${planId}"`);
+=======
+
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
       res.json({ success: true, block: newBlock });
     } catch (error: any) {
       res.status(500).json({ success: false, error: error.message });
@@ -956,8 +863,27 @@ export async function registerRoutes(
   });
 
   // ============ Unit Blocks API ============
+<<<<<<< HEAD
   const readUnitBlocks = (): any[] => (readData('unit-blocks') as any[]) || [];
   const writeUnitBlocks = (blocks: any[]) => writeData('unit-blocks', blocks);
+=======
+  const unitBlocksFile = path.join(process.cwd(), "server", "api", "unit-blocks.json");
+
+  const readUnitBlocks = (): any[] => {
+    try {
+      if (!fs.existsSync(unitBlocksFile)) {
+        fs.writeFileSync(unitBlocksFile, JSON.stringify([], null, 2));
+      }
+      return JSON.parse(fs.readFileSync(unitBlocksFile, "utf-8"));
+    } catch {
+      return [];
+    }
+  };
+
+  const writeUnitBlocks = (blocks: any[]) => {
+    fs.writeFileSync(unitBlocksFile, JSON.stringify(blocks, null, 2));
+  };
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
 
   app.get("/api/unit-blocks", (req, res) => {
     try {
@@ -1007,7 +933,11 @@ export async function registerRoutes(
 
       blocks.push(newBlock);
       writeUnitBlocks(blocks);
+<<<<<<< HEAD
       logAudit('CREATE', 'unit-block', newBlock.id, `Bloqueó fechas de la unidad "${unitName}"${motivo ? ': ' + motivo : ''}`);
+=======
+
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
       res.json({ success: true, block: newBlock });
     } catch (error: any) {
       res.status(500).json({ success: false, error: error.message });
@@ -1033,8 +963,23 @@ export async function registerRoutes(
   });
 
   // ============ Banners API ============
+<<<<<<< HEAD
   const readBanners = (): any[] => (readData('banners') as any[]) || [];
   const writeBanners = (banners: any[]) => writeData('banners', banners);
+=======
+  const bannersFile = path.join(process.cwd(), "server", "api", "banners.json");
+
+  const readBanners = (): any[] => {
+    try {
+      if (!fs.existsSync(bannersFile)) fs.writeFileSync(bannersFile, JSON.stringify([], null, 2));
+      return JSON.parse(fs.readFileSync(bannersFile, "utf-8"));
+    } catch { return []; }
+  };
+
+  const writeBanners = (banners: any[]) => {
+    fs.writeFileSync(bannersFile, JSON.stringify(banners, null, 2));
+  };
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
 
   const bannerUploadStorage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -1052,7 +997,11 @@ export async function registerRoutes(
     storage: bannerUploadStorage,
     limits: { fileSize: 100 * 1024 * 1024 },
     fileFilter: (req, file, cb) => {
+<<<<<<< HEAD
       if (isMediaFile(file)) cb(null, true);
+=======
+      if (file.mimetype.startsWith("image/") || file.mimetype.startsWith("video/")) cb(null, true);
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
       else cb(new Error("Solo se permiten imágenes o videos"));
     }
   });
@@ -1068,17 +1017,34 @@ export async function registerRoutes(
   app.post("/api/banners/upload-image", uploadBannerImage.single("image"), async (req: any, res) => {
     try {
       if (!req.file) return res.status(400).json({ error: "No se recibió archivo" });
-      const inputPath = req.file.path;
-      const isVideo = isVideoFile(req.file);
-      console.log(`[upload] banner received  file=${req.file.originalname}  saved=${req.file.filename}  size=${req.file.size}  type=${isVideo ? "video" : "image"}`);
-      const servedPath = isVideo
-        ? await processVideoFile(inputPath)
-        : await processImageFile(inputPath);
-      res.json({ url: `/images/banners/${path.basename(servedPath)}`, type: isVideo ? "video" : "image" });
-    } catch (e: any) {
-      console.error(`[upload] banner FAILED  err=${e.message}`);
-      res.status(500).json({ error: e.message });
-    }
+<<<<<<< HEAD
+      if (isVideoFile(req.file)) {
+=======
+      if (req.file.mimetype.startsWith("video/")) {
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
+        const inputPath = req.file.path;
+        const outputFilename = req.file.filename.replace(/\.[^.]+$/, "") + "_h264.mp4";
+        const outputPath = path.join(path.dirname(inputPath), outputFilename);
+        await transcodeToH264(inputPath, outputPath);
+<<<<<<< HEAD
+        if (fs.existsSync(inputPath)) fs.unlinkSync(inputPath);
+        res.json({ url: `/images/banners/${outputFilename}`, type: "video" });
+      } else {
+        const ext = path.extname(req.file.filename).toLowerCase();
+        let filename = req.file.filename;
+        if (ext !== ".jpg" && ext !== ".jpeg") {
+          const outputPath = await convertImageToJpeg(req.file.path);
+          filename = path.basename(outputPath);
+        }
+        res.json({ url: `/images/banners/${filename}`, type: "image" });
+=======
+        fs.unlinkSync(inputPath);
+        res.json({ url: `/images/banners/${outputFilename}`, type: "video" });
+      } else {
+        res.json({ url: `/images/banners/${req.file.filename}`, type: "image" });
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
+      }
+    } catch (e: any) { res.status(500).json({ error: e.message }); }
   });
 
   app.post("/api/banners", (req, res) => {
@@ -1101,7 +1067,10 @@ export async function registerRoutes(
       };
       banners.push(newBanner);
       writeBanners(banners);
+<<<<<<< HEAD
       logAudit('CREATE', 'banner', newBanner.id, `Creó banner "${newBanner.titulo || newBanner.texto?.substring(0, 40)}"`);
+=======
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
       res.json({ success: true, banner: newBanner });
     } catch (e: any) { res.status(500).json({ error: e.message }); }
   });
@@ -1114,7 +1083,10 @@ export async function registerRoutes(
       if (idx === -1) return res.status(404).json({ error: "Banner no encontrado" });
       banners[idx] = { ...banners[idx], ...req.body, id };
       writeBanners(banners);
+<<<<<<< HEAD
       logAudit('UPDATE', 'banner', id, `Actualizó banner "${banners[idx].titulo}"`);
+=======
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
       res.json({ success: true, banner: banners[idx] });
     } catch (e: any) { res.status(500).json({ error: e.message }); }
   });
@@ -1127,7 +1099,10 @@ export async function registerRoutes(
       if (idx === -1) return res.status(404).json({ error: "Banner no encontrado" });
       banners[idx].activo = !banners[idx].activo;
       writeBanners(banners);
+<<<<<<< HEAD
       logAudit('UPDATE', 'banner', id, `${banners[idx].activo ? 'Activó' : 'Desactivó'} banner "${banners[idx].titulo}"`);
+=======
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
       res.json({ success: true, banner: banners[idx] });
     } catch (e: any) { res.status(500).json({ error: e.message }); }
   });
@@ -1137,18 +1112,43 @@ export async function registerRoutes(
       const { id } = req.params;
       let banners = readBanners();
       const initial = banners.length;
+<<<<<<< HEAD
       const deleted = banners.find((b: any) => b.id === id);
       banners = banners.filter((b: any) => b.id !== id);
       if (banners.length === initial) return res.status(404).json({ error: "Banner no encontrado" });
       writeBanners(banners);
       logAudit('DELETE', 'banner', id, `Eliminó banner "${deleted?.titulo || id}"`);
+=======
+      banners = banners.filter((b: any) => b.id !== id);
+      if (banners.length === initial) return res.status(404).json({ error: "Banner no encontrado" });
+      writeBanners(banners);
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
       res.json({ success: true });
     } catch (e: any) { res.status(500).json({ error: e.message }); }
   });
 
   // ============ Dynamic Plans API ============
+<<<<<<< HEAD
   const readPlans = (): any[] => (readData('plans') as any[]) || [];
   const writePlans = (plans: any[]) => writeData('plans', plans);
+=======
+  const plansFile = path.join(process.cwd(), "server", "api", "plans.json");
+
+  const readPlans = (): any[] => {
+    try {
+      if (!fs.existsSync(plansFile)) {
+        return [];
+      }
+      return JSON.parse(fs.readFileSync(plansFile, "utf-8"));
+    } catch {
+      return [];
+    }
+  };
+
+  const writePlans = (plans: any[]) => {
+    fs.writeFileSync(plansFile, JSON.stringify(plans, null, 2));
+  };
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
 
   app.get("/api/plans", (req, res) => {
     try {
@@ -1250,7 +1250,11 @@ export async function registerRoutes(
 
       plans.push(newPlan);
       writePlans(plans);
+<<<<<<< HEAD
       logAudit('CREATE', 'plan', newPlan.id, `Creó plan "${nombre}"`);
+=======
+
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
       res.json({ success: true, plan: newPlan });
     } catch (error: any) {
       res.status(500).json({ success: false, error: error.message });
@@ -1317,7 +1321,11 @@ export async function registerRoutes(
 
       plans[planIndex] = updatedPlan;
       writePlans(plans);
+<<<<<<< HEAD
       logAudit('UPDATE', 'plan', id, `Actualizó plan "${updatedPlan.nombre}"`);
+=======
+
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
       res.json({ success: true, plan: updatedPlan });
     } catch (error: any) {
       res.status(500).json({ success: false, error: error.message });
@@ -1346,7 +1354,11 @@ export async function registerRoutes(
 
       plans[planIndex].estado = newState;
       writePlans(plans);
+<<<<<<< HEAD
       logAudit('UPDATE', 'plan', id, `${newState ? 'Activó' : 'Desactivó'} plan "${plans[planIndex].nombre}"`);
+=======
+
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
       res.json({ success: true, plan: plans[planIndex] });
     } catch (error: any) {
       res.status(500).json({ success: false, error: error.message });
@@ -1450,8 +1462,19 @@ export async function registerRoutes(
   });
 
   // ============ Addons CRUD ============
+<<<<<<< HEAD
   const readAddons = (): any[] => (readData('addons') as any[]) || [];
   const writeAddons = (data: any[]) => writeData('addons', data);
+=======
+  const addonsFilePath = path.join(process.cwd(), "server", "api", "addons.json");
+
+  const readAddons = (): any[] => {
+    try {
+      return JSON.parse(fs.readFileSync(addonsFilePath, "utf-8"));
+    } catch { return []; }
+  };
+  const writeAddons = (data: any[]) => fs.writeFileSync(addonsFilePath, JSON.stringify(data, null, 2));
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
 
   const addonMediaStorage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -1468,7 +1491,11 @@ export async function registerRoutes(
     storage: addonMediaStorage,
     limits: { fileSize: 100 * 1024 * 1024 },
     fileFilter: (req, file, cb) => {
+<<<<<<< HEAD
       if (isMediaFile(file)) cb(null, true);
+=======
+      if (file.mimetype.startsWith("image/") || file.mimetype.startsWith("video/")) cb(null, true);
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
       else cb(new Error("Solo se permiten imágenes y videos"));
     }
   });
@@ -1492,7 +1519,10 @@ export async function registerRoutes(
       };
       addons.push(newAddon);
       writeAddons(addons);
+<<<<<<< HEAD
       logAudit('CREATE', 'addon', newAddon.id, `Creó adicional "${title}"`);
+=======
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
       res.json({ success: true, addon: newAddon });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
@@ -1517,7 +1547,10 @@ export async function registerRoutes(
         media: media ?? addons[idx].media ?? []
       };
       writeAddons(addons);
+<<<<<<< HEAD
       logAudit('UPDATE', 'addon', id, `Actualizó adicional "${addons[idx].title}"`);
+=======
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
       res.json({ success: true, addon: addons[idx] });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
@@ -1533,27 +1566,34 @@ export async function registerRoutes(
       const idx = addons.findIndex((a: any) => a.id === id);
       if (idx === -1) return res.status(404).json({ error: "Adicional no encontrado" });
       if (!addons[idx].media) addons[idx].media = [];
-
       for (const file of files) {
+<<<<<<< HEAD
         const isVideo = isVideoFile(file);
-        const inputPath = path.join(process.cwd(), "public", "images", "addons", file.filename);
-        console.log(`[upload] addon media received  addon=${id}  file=${file.originalname}  saved=${file.filename}  size=${file.size}  type=${isVideo ? "video" : "image"}`);
-
-        const servedPath = isVideo
-          ? await processVideoFile(inputPath)
-          : await processImageFile(inputPath);
-
-        const url = `/images/addons/${path.basename(servedPath)}`;
+=======
+        const isVideo = file.mimetype.startsWith("video/");
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
+        let filename = file.filename;
+        if (isVideo) {
+          const inputPath = path.join(process.cwd(), "public", "images", "addons", file.filename);
+          const outputPath = await transcodeToH264(inputPath);
+          filename = path.basename(outputPath);
+<<<<<<< HEAD
+        } else {
+          const ext = path.extname(file.filename).toLowerCase();
+          if (ext !== ".jpg" && ext !== ".jpeg") {
+            const inputPath = path.join(process.cwd(), "public", "images", "addons", file.filename);
+            const outputPath = await convertImageToJpeg(inputPath);
+            filename = path.basename(outputPath);
+          }
+=======
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
+        }
+        const url = `/images/addons/${filename}`;
         addons[idx].media.push({ type: isVideo ? "video" : "image", url });
-        console.log(`[upload] addon media done  url=${url}`);
       }
-
       writeAddons(addons);
       res.json({ success: true, media: addons[idx].media });
-    } catch (e: any) {
-      console.error(`[upload] addon media FAILED  err=${e.message}`);
-      res.status(500).json({ error: e.message });
-    }
+    } catch (e: any) { res.status(500).json({ error: e.message }); }
   });
 
   app.delete("/api/addons/:id/media", (req, res) => {
@@ -1585,8 +1625,19 @@ export async function registerRoutes(
   });
 
   // ============ Campings CRUD ============
+<<<<<<< HEAD
   const readCampings = (): any[] => (readData('campings') as any[]) || [];
   const writeCampings = (data: any[]) => writeData('campings', data);
+=======
+  const campingsFilePath = path.join(process.cwd(), "server", "api", "campings.json");
+
+  const readCampings = (): any[] => {
+    try {
+      return JSON.parse(fs.readFileSync(campingsFilePath, "utf-8"));
+    } catch { return []; }
+  };
+  const writeCampings = (data: any[]) => fs.writeFileSync(campingsFilePath, JSON.stringify(data, null, 2));
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
 
   app.get("/api/campings", (req, res) => res.json(readCampings()));
 
@@ -1607,7 +1658,10 @@ export async function registerRoutes(
         ...(image !== undefined && { image })
       };
       writeCampings(campings);
+<<<<<<< HEAD
       logAudit('UPDATE', 'camping', id, `Actualizó glamping "${campings[idx].name}"`);
+=======
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
       res.json({ success: true, camping: campings[idx] });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
@@ -1629,7 +1683,11 @@ export async function registerRoutes(
     storage: campingImageStorage,
     limits: { fileSize: 100 * 1024 * 1024 },
     fileFilter: (req, file, cb) => {
+<<<<<<< HEAD
       if (isMediaFile(file)) cb(null, true);
+=======
+      if (file.mimetype.startsWith("image/") || file.mimetype.startsWith("video/")) cb(null, true);
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
       else cb(new Error("Solo se permiten imágenes y videos"));
     }
   });
@@ -1638,18 +1696,27 @@ export async function registerRoutes(
     try {
       const { id } = req.params;
       if (!req.file) return res.status(400).json({ error: "No se recibió archivo" });
-
-      const inputPath = path.join(process.cwd(), "public", "images", "campings", req.file.filename);
-      const isVideo = isVideoFile(req.file);
-      console.log(`[upload] camping image received  camping=${id}  file=${req.file.originalname}  saved=${req.file.filename}  size=${req.file.size}  type=${isVideo ? "video" : "image"}`);
-
-      const servedPath = isVideo
-        ? await processVideoFile(inputPath)
-        : await processImageFile(inputPath);
-
-      const imageUrl = `/images/campings/${path.basename(servedPath)}`;
-      console.log(`[upload] camping image done  url=${imageUrl}`);
-
+      let filename = req.file.filename;
+<<<<<<< HEAD
+      if (isVideoFile(req.file)) {
+        const inputPath = path.join(process.cwd(), "public", "images", "campings", req.file.filename);
+        const outputPath = await transcodeToH264(inputPath);
+        filename = path.basename(outputPath);
+      } else {
+        const ext = path.extname(req.file.filename).toLowerCase();
+        if (ext !== ".jpg" && ext !== ".jpeg") {
+          const inputPath = path.join(process.cwd(), "public", "images", "campings", req.file.filename);
+          const outputPath = await convertImageToJpeg(inputPath);
+          filename = path.basename(outputPath);
+        }
+=======
+      if (req.file.mimetype.startsWith("video/")) {
+        const inputPath = path.join(process.cwd(), "public", "images", "campings", req.file.filename);
+        const outputPath = await transcodeToH264(inputPath);
+        filename = path.basename(outputPath);
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
+      }
+      const imageUrl = `/images/campings/${filename}`;
       const campings = readCampings();
       const idx = campings.findIndex((c: any) => c.id === parseInt(id));
       if (idx === -1) return res.status(404).json({ error: "Glamping no encontrado" });
@@ -1657,10 +1724,12 @@ export async function registerRoutes(
       campings[idx].images = images;
       campings[idx].image = images[0];
       writeCampings(campings);
-      logAudit('UPLOAD', 'camping', id, `Subió ${isVideo ? 'video' : 'imagen'} al glamping "${campings[idx].name}"`);
+<<<<<<< HEAD
+      logAudit('UPLOAD', 'camping', id, `Subió ${isVideoFile(req.file!) ? 'video' : 'imagen'} al glamping "${campings[idx].name}"`);
+=======
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
       res.json({ success: true, imageUrl, camping: campings[idx] });
     } catch (error: any) {
-      console.error(`[upload] camping image FAILED  err=${error.message}`);
       res.status(500).json({ error: error.message });
     }
   });
@@ -1676,7 +1745,10 @@ export async function registerRoutes(
       if (campings[idx].images.length === 0) campings[idx].images = ["/images/glamping-placeholder.svg"];
       if (campings[idx].image === imageUrl) campings[idx].image = campings[idx].images[0];
       writeCampings(campings);
+<<<<<<< HEAD
       logAudit('DELETE', 'camping', id, `Eliminó imagen del glamping "${campings[idx].name}"`);
+=======
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
       res.json({ success: true, camping: campings[idx] });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
@@ -1693,16 +1765,28 @@ export async function registerRoutes(
       if (idx === -1) return res.status(404).json({ error: "Glamping no encontrado" });
       campings[idx].image = imageUrl;
       writeCampings(campings);
+<<<<<<< HEAD
       logAudit('UPDATE', 'camping', id, `Cambió portada del glamping "${campings[idx].name}"`);
+=======
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
       res.json({ success: true, camping: campings[idx] });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   });
 
+<<<<<<< HEAD
   app.get("/api/pricing", (req, res) => {
     try {
       res.json(readData('pricing') || {});
+=======
+  const PRICING_PATH = path.join(process.cwd(), "server/api/pricing.json");
+
+  app.get("/api/pricing", (req, res) => {
+    try {
+      const data = fs.readFileSync(PRICING_PATH, "utf-8");
+      res.json(JSON.parse(data));
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
     } catch (error: any) {
       res.status(500).json({ error: "Error leyendo configuración de precios" });
     }
@@ -1710,14 +1794,19 @@ export async function registerRoutes(
 
   app.put("/api/pricing", (req, res) => {
     try {
+<<<<<<< HEAD
       writeData('pricing', req.body);
       logAudit('UPDATE', 'pricing', null, 'Actualizó tarifas y configuración de precios');
+=======
+      fs.writeFileSync(PRICING_PATH, JSON.stringify(req.body, null, 2));
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
       res.json({ success: true });
     } catch (error: any) {
       res.status(500).json({ success: false, error: error.message });
     }
   });
 
+<<<<<<< HEAD
   app.get("/api/audit-log", async (req: any, res) => {
     try {
       const limit = Math.min(parseInt(req.query.limit as string) || 200, 500);
@@ -1737,5 +1826,7 @@ export async function registerRoutes(
     }
   });
 
+=======
+>>>>>>> 55a329eb5d6673f38daa91668508787cfdc747b9
   return httpServer;
 }
